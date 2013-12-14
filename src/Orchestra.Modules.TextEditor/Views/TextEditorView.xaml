@@ -1,0 +1,53 @@
+﻿<orchestra:DocumentView x:Class="Orchestra.Modules.TextEditor.Views.TextEditorView"
+						xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+						xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+						xmlns:catel="http://catel.codeplex.com"
+						xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+						xmlns:orchestra="http://orchestra.codeplex.com"
+						xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+						xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+						xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+						xmlns:controls="clr-namespace:Orchestra.Modules.TextEditor"
+						mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="300">
+   
+
+	<catel:StackGrid>
+		
+
+		<avalonEdit:TextEditor Grid.ColumnSpan="4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"	
+			x:Name="textEditor"
+			FontSize="10pt" 
+			Document="{Binding Document, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+			SyntaxHighlighting="{Binding HighlightDef}"
+			IsReadOnly="{Binding IsReadOnly}"
+			IsModified="{Binding Path=IsDirty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+			FontFamily="Consolas"
+			ShowLineNumbers="{Binding Path=ShowLineNumbers, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"			
+			WordWrap="{Binding Path=WordWrap, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                               
+				>  
+			<i:Interaction.Triggers>
+				<i:EventTrigger EventName="TextChanged">
+					<catel:EventToCommand 
+					Command="{Binding Path=DataContext.UpdateCommand, 
+										RelativeSource={RelativeSource FindAncestor, AncestorType=catel:UserControl, AncestorLevel=1}}" 
+						CommandParameter="{Binding Path=Document, ElementName=textEditor}" 
+						DisableAssociatedObjectOnCannotExecute="False" />
+				</i:EventTrigger>
+			</i:Interaction.Triggers>
+
+			<avalonEdit:TextEditor.ContextMenu>
+				<ContextMenu>
+					<MenuItem Command="Cut" Header="Cut" />
+					<MenuItem Command="Copy" Header="Copy" />
+					<MenuItem Command="Paste" Header="Paste" />
+					<MenuItem Command="Delete" Header="Delete" />
+					<MenuItem Command="Undo" Header="Undo" />
+					<MenuItem Command="Redo" Header="Redo" />
+				</ContextMenu>
+			</avalonEdit:TextEditor.ContextMenu>
+		</avalonEdit:TextEditor>
+
+	</catel:StackGrid>
+
+</orchestra:DocumentView>
