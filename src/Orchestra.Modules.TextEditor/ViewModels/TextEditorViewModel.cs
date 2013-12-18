@@ -25,6 +25,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
     using Microsoft.Win32;
     using System.Text.RegularExpressions;
     using ICSharpCode.AvalonEdit.Rendering;
+    using Catel.Logging;
+    using Orchestra.Models;
 
     /// <summary>
     /// UserControl view model.
@@ -42,7 +44,12 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
         private PropertiesViewModel _propertiesViewModel;
 
-        private TextEditorModule _textEditorModule; 
+        private TextEditorModule _textEditorModule;
+
+        /// <summary>
+        /// The log
+        /// </summary>
+        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
         #endregion
 
         #region Constructors
@@ -57,7 +64,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <param name="contextualViewModelManager">The contextual view model manager.</param>
         /// <param name="textEditorModule">The Main Module Class.</param>
         public TextEditorViewModel(string title, TextEditorModule textEditorModule, IMessageService messageService, IOrchestraService orchestraService, IMessageMediator messageMediator, IContextualViewModelManager contextualViewModelManager)
-            : this(textEditorModule, messageService, orchestraService, messageMediator, contextualViewModelManager )
+            : this(textEditorModule, messageService, orchestraService, messageMediator, contextualViewModelManager)
         {
             if (!string.IsNullOrWhiteSpace(title))
             {
@@ -94,7 +101,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
             #region TextEditor related
             TextOptions = new TextEditorOptions() { ShowSpaces = true };
-          
+
 
             // Set Highlightning to C#
             this.HighlightDef = HighlightingManager.Instance.GetDefinition("C#");
@@ -119,8 +126,10 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             #region Document related
 
             //CloseDocument = new Command(OnCloseDocumentExecute);
-            this.Title = FileName; 
+            this.Title = FileName;
             #endregion
+
+            ViewModelActivated();
 
             #region Mediators
             //var messageMediator = ServiceLocator.Default.ResolveType<IMessageMediator>();
@@ -211,7 +220,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             get
             {
-                if (FilePath == null)
+                if (string.IsNullOrEmpty(FilePath))
                     return "Noname" + (IsDirty ? "*" : "");
 
                 this.Title = System.IO.Path.GetFileName(FilePath) + (IsDirty ? "*" : "");
@@ -392,11 +401,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         private void OnShowLineNumbersCommandExecute()
         {
-            // TODO: Handle command logic here
-            if (ShowLineNumbers == false)
-                ShowLineNumbers = true;
-            else
-                ShowLineNumbers = false;
+            // If ShowLineNumbers == false then true 
+            ShowLineNumbers = !ShowLineNumbers;
         }
         #endregion
 
@@ -420,11 +426,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         private void OnWordWrapCommandExecute()
         {
-            // TODO: Handle command logic here
-            if (WordWrap == false)
-                WordWrap = true;
-            else
-                WordWrap = false;
+            // Check if WordWrap is false then set to true
+            WordWrap = !WordWrap;
         }
         #endregion
 
@@ -473,11 +476,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         private void OnShowSpacesCommandExecute()
         {
-            // TODO: Handle command logic here
-            if (this.TextOptions.ShowSpaces == false)
-                this.TextOptions.ShowSpaces = true;
-            else
-                this.TextOptions.ShowSpaces = false;
+            // Check if ShowSpaces is false else true
+            this.TextOptions.ShowSpaces = !this.TextOptions.ShowSpaces;
         }
         #endregion
 
@@ -501,13 +501,10 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         private void OnShowTabCommandExecute()
         {
-            // TODO: Handle command logic here
-            if (this.TextOptions.ShowTabs == false)
-                this.TextOptions.ShowTabs = true;
-            else
-                this.TextOptions.ShowTabs = false;
+            // Check if ShowSpaces is false else true
+            TextOptions.ShowTabs = !TextOptions.ShowTabs;
         }
-        #endregion 
+        #endregion
 
         #region Close Document Command
         /// <summary>
@@ -532,17 +529,16 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             if (this.IsDirty)
             {
                 var res = MessageBox.Show(string.Format("Save changes for file '{0}'?", this.FileName), "TextEditor App", MessageBoxButton.YesNoCancel);
+
                 if (res == MessageBoxResult.Cancel)
                     return;
-                if (res == MessageBoxResult.Yes)
-                {
+                else if (res == MessageBoxResult.Yes)
                     Save(this);
-                }
             }
-            _textEditorModule.Close(this);       
+            _textEditorModule.Close(this);
             _orchestraService.CloseDocument(this);
         }
-        
+
         #endregion
 
         #region Save Document Command
@@ -572,7 +568,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             //_textEditorModule.Save(this);
 
-            if (fileToSave.FilePath == null || saveAsFlag)
+            if (string.IsNullOrEmpty(fileToSave.FilePath) || saveAsFlag)
             {
                 var dlg = new SaveFileDialog();
                 if (dlg.ShowDialog().GetValueOrDefault())
@@ -659,7 +655,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <summary>
         /// Url property data.
         /// </summary>
-        public static readonly PropertyData UrlProperty = RegisterProperty("Url", typeof(string), null, (s,e) => ((TextEditorViewModel)(s)).OnUrlChanged(e));
+        public static readonly PropertyData UrlProperty = RegisterProperty("Url", typeof(string), null, (s, e) => ((TextEditorViewModel)(s)).OnUrlChanged(e));
 
         /// <summary>
         /// Called when the Url has changed.
@@ -684,7 +680,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// The recent sites.
         /// </value>
         //public string[] SyntaxHighlighting { get { return new[] { "Orchestra", "Catel" }; } }
-        public string[] SyntaxHighlighting { get { return new[] { "XML", "C#", "C++", "PHP", "Java"}; } }
+        public string[] SyntaxHighlighting { get { return new[] { "XML", "C#", "C++", "PHP", "Java" }; } }
 
         #region SelectedSite property
 
@@ -700,25 +696,22 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <summary>
         /// SelectedSite property data.
         /// </summary>
-        public static readonly PropertyData SelectedLanugageProperty = RegisterProperty("SelectedSite", typeof(string), null, OnSelectedLanguageChanged);        
+        public static readonly PropertyData SelectedLanugageProperty = RegisterProperty("SelectedSite", typeof(string), null,
+            (sender, e) => ((TextEditorViewModel)sender).OnSelectedLanguageChanged());
 
         /// <summary>
         /// Called when the SelectedSite value changed.
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="AdvancedPropertyChangedEventArgs"/> instance containing the event data.</param>
-        private static void OnSelectedLanguageChanged(object sender, AdvancedPropertyChangedEventArgs e)
+        private void OnSelectedLanguageChanged()
         {
-            var _this = ((TextEditorViewModel)sender);
-
-            switch (_this.SelectedLanguage)
+            switch (SelectedLanguage)
             {
                 case "XML":
-                    _this.Url = "http://www.github.com/Orcomp/Orchestra";
+                    Url = "http://www.github.com/Orcomp/Orchestra";
                     break;
 
                 case "C#":
-                    _this.Url = "http://www.catelproject.com";
+                    Url = "http://www.catelproject.com";
                     break;
 
                 default:
@@ -731,19 +724,17 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
         #endregion
 
-     
 
         /// <summary>
         /// Method is called when the active view changes within the orchestra application
         /// </summary>
         public void ViewModelActivated()
         {
-            _textEditorModule.ActiveDocument = this;
+            //_textEditorModule.ActiveDocument = this;
 
             UpdateContextSensitiveData();
         }
 
-    
 
         /// <summary>
         /// Saves the data.
@@ -761,7 +752,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             _textEditorModule.Close(this);
             return true;
         }
-      
+
 
         /// <summary>
         /// Update the context sensitive data, related to this view.
@@ -770,16 +761,15 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             if (_propertiesViewModel == null)
             {
-                _propertiesViewModel = _contextualViewModelManager.GetViewModelForContextSensitiveView<PropertiesViewModel>();  
+                _propertiesViewModel = _contextualViewModelManager.GetViewModelForContextSensitiveView<PropertiesViewModel>();
             }
-            
-            if (_propertiesViewModel != null)
+            else
             {
                 _propertiesViewModel.Url = Url;
 
                 MethodsCollection();
 
-                if (_propertiesViewModel.MethodSignatureCollection !=null)
+                if (_propertiesViewModel.MethodSignatureCollection != null)
                 {
                     _propertiesViewModel.MethodSignatureCollection.Clear();
                 }
@@ -847,24 +837,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
                 }
             }
             return methodsCollection;
-        }  
+        }
         #endregion
     }
-    /// <summary>
-    /// Match Document Item
-    /// </summary>
-    public class MatchItem
-    {
-        /// <summary>
-        /// The line of detected match
-        /// </summary>
-        public int currentLine { get; set; }
-
-        /// <summary>
-        /// The actual detected match
-        /// </summary>
-        public Match currentMatch { get; set; }
-    }
-
-
 }

@@ -31,6 +31,7 @@ namespace Orchestra.Modules.TextEditor.Views
 	using ICSharpCode.AvalonEdit.CodeCompletion;
 	using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 	using Orchestra.Modules.TextEditor.Intellisense;
+    using Orchestra.Modules.TextEditor.Models;
 
 	/// <summary>
 	/// Interaction logic for BrowserView.xaml.

@@ -25,7 +25,9 @@ namespace Orchestra.Modules.TextEditor
     using System.IO;
     using Catel.MVVM.Services;
     using Orchestra.Properties;
-    
+    using Catel.Logging;
+    using Orchestra.Models;
+
     /// <summary>
     /// Browser module.
     /// </summary>
@@ -45,13 +47,19 @@ namespace Orchestra.Modules.TextEditor
         ReadOnlyObservableCollection<TextEditorViewModel> _readonyFiles = null;
 
         /// <summary>
+        /// The log
+        /// </summary>
+        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
+
+
+        /// <summary>
         /// Collection of all files
         /// </summary>
         public ReadOnlyObservableCollection<TextEditorViewModel> Files
         {
             get
             {
-                if (_readonyFiles == null)
+                if (_readonyFiles.Equals(null))
                     _readonyFiles = new ReadOnlyObservableCollection<TextEditorViewModel>(_files);
 
                 return _readonyFiles;
@@ -62,7 +70,7 @@ namespace Orchestra.Modules.TextEditor
         /// Command - Create new Document
         /// </summary>
         public Command NewDocumentCommand { get; private set; }
-        
+
         /// <summary>
         /// Command - Open Existent Document
         /// </summary>
@@ -145,9 +153,9 @@ namespace Orchestra.Modules.TextEditor
                  ModuleName);
 
             ribbonService.RegisterContextualRibbonItem<TextEditorView>(
-                new RibbonButton(Name, "File", "SaveAs", "SaveAsCommand") 
-                { 
-                    ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/File_SaveAs32.png" 
+                new RibbonButton(Name, "File", "SaveAs", "SaveAsCommand")
+                {
+                    ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/File_SaveAs32.png"
                 },
                 ModuleName);
 
@@ -157,7 +165,7 @@ namespace Orchestra.Modules.TextEditor
             //      ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/action_close.png",
             //      ToolTip = new RibbonToolTip { Title = "Close (Ctrl+X)", Text = "Closes the file." }
             //  },
-              //ModuleName);
+            //ModuleName);
 
             ribbonService.RegisterContextualRibbonItem<TextEditorView>(
                 new RibbonButton(Name, "File", "CloseMe", "CloseDocument")
@@ -228,7 +236,7 @@ namespace Orchestra.Modules.TextEditor
              ModuleName);
 
             #region TextEditor Module
-          
+
             ribbonService.RegisterContextualRibbonItem<TextEditorView>(new RibbonComboBox(Name, "Languages")
             {
                 ItemsSource = "SyntaxHighlighting",
@@ -246,7 +254,7 @@ namespace Orchestra.Modules.TextEditor
             {
                 orchestraService.ShowDocumentIfHidden<PropertiesViewModel>();
             })) { ItemImage = "/rchestra.Modules.TextEditor;component/Resources/Images/App/Edit_WordWrap32.png" });
-           
+
             #endregion
 
             var dockingSettings = new DockingSettings();
@@ -262,7 +270,7 @@ namespace Orchestra.Modules.TextEditor
             //orchestraViewModel.Url = "http://www.github.com/Orcomp/Orchestra";
             orchestraService.ShowDocument(currenttextEditorViewModel, "New Document");
         }
-        
+
         #endregion
 
         // Commmands
@@ -309,9 +317,16 @@ namespace Orchestra.Modules.TextEditor
             var dlg = new OpenFileDialog();
             if (dlg.ShowDialog().GetValueOrDefault())
             {
-                var fileViewModel = Open(dlg.FileName);
-                _files.Add(fileViewModel);
-                ActiveDocument = fileViewModel;
+                try
+                {
+                    var fileViewModel = Open(dlg.FileName);
+                    _files.Add(fileViewModel);
+                    ActiveDocument = fileViewModel;
+                }
+                catch (Exception ex)
+                {
+                    Log.ErrorWithData(ex, "Error Opening File " + dlg.FileName);
+                }
             }
         }
 
@@ -322,11 +337,14 @@ namespace Orchestra.Modules.TextEditor
         /// <returns></returns>
         public TextEditorViewModel Open(string filepath)
         {
-             //Verify whether file is already open in editor, and if so, show it
+            //Verify whether file is already open in editor, and if so, show it
             var orcaViewModel = _files.FirstOrDefault(fm => fm.FilePath == filepath);
             if (orcaViewModel != null)
             {
                 MessageBox.Show(string.Format("The file '{0}' is already Opened", orcaViewModel.FileName), "TextEditor App", MessageBoxButton.OK);
+
+                Log.Warning("File is already opened " + orcaViewModel.FileName);
+
                 return orcaViewModel;
             }
 
@@ -358,9 +376,12 @@ namespace Orchestra.Modules.TextEditor
             //var viewModel = new MapViewModel();
             var viewModel = new DocumentMapViewModel();
             _uiVisualizerService.ShowDialog(viewModel);
+
+            Log.Info("Show Map Window");
+
         }
 
-       
+
         #endregion
 
         #region Close Document Command
@@ -379,48 +400,40 @@ namespace Orchestra.Modules.TextEditor
         /// </summary>
         private void CloseDocumentCommandCanExecute()
         {
+            Log.Info("Cloing current file");
+
             this.Close(ActiveDocument);
 
         }
-   
+
         #endregion
 
 
         #region Internal Close
         internal void Close(TextEditorViewModel fileToClose)
         {
-            //if (fileToClose.IsDirty)
-            //{
-            //    var res = MessageBox.Show(string.Format("Save changes for file '{0}'?", fileToClose.FileName), "TextEditor App", MessageBoxButton.YesNoCancel);
-            //    if (res == MessageBoxResult.Cancel)
-            //        return;
-            //    if (res == MessageBoxResult.Yes)
-            //    {
-            //        Save(fileToClose);
-            //    }
-            //}
-            
+
             //Removes the file from the collection of Documents
             _files.Remove(fileToClose);
-        } 
+        }
         #endregion
 
         #region Internal Save
         internal void Save(TextEditorViewModel fileToSave, bool saveAsFlag = false)
         {
-            if (fileToSave.FilePath == null || saveAsFlag)
+            if (string.IsNullOrEmpty(fileToSave.FilePath) || saveAsFlag)
             {
                 var dlg = new SaveFileDialog();
                 if (dlg.ShowDialog().GetValueOrDefault())
                     fileToSave.FilePath = dlg.FileName;
-                //fileToSave.FilePath = dlg.SafeFileName;
             }
+
+            Log.Info("Saving file : " + fileToSave.FilePath);
 
             File.WriteAllText(fileToSave.FilePath, fileToSave.Document.Text);
             //ActiveDocument.IsDirty = false;
-        } 
+        }
         #endregion
-
 
         #region ActiveDocument
 
@@ -449,7 +462,7 @@ namespace Orchestra.Modules.TextEditor
         private void LoadResourceDictionary()
         {
             Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/Orchestra.Modules.TextEditor;component/ResourceDictionary.xaml", UriKind.RelativeOrAbsolute) });
-        }  
-        #endregion       
+        }
+        #endregion
     }
 }

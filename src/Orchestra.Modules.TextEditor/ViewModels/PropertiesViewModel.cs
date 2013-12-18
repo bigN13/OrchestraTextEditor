@@ -9,6 +9,7 @@ using Catel;
 using Catel.Messaging;
 using Catel.MVVM;
 using Catel.MVVM.Services;
+using Orchestra.Modules.TextEditor.Models;
 using Orchestra.Services;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
