@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Serialization;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using Catel.Logging;
 
 namespace Orchestra.Modules.TextEditor.Intellisense
 {
@@ -14,6 +15,11 @@ namespace Orchestra.Modules.TextEditor.Intellisense
 	public class FileCompletionDataProvider : ICompletionDataProvider
 	{
 		private static readonly Dictionary<string, IEnumerable<ICompletionData>> Data = new Dictionary<string, IEnumerable<ICompletionData>>();
+
+        /// <summary>
+        /// The log
+        /// </summary>
+        private static readonly ILog Log = LogManager.GetCurrentClassLogger();
 
         /// <summary>
         /// GetData
@@ -31,7 +37,7 @@ namespace Orchestra.Modules.TextEditor.Intellisense
 				var result = GetData(highlightingName);
 				Data.Add(highlightingName, result);
 			}
-			if (input == " ")
+			if (string.IsNullOrWhiteSpace(input))
 				return Data[highlightingName];
 			return new List<ICompletionData>();
 		}
@@ -62,9 +68,10 @@ namespace Orchestra.Modules.TextEditor.Intellisense
 			}
 			return result;
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
-				// TODO: приделать логирование
+                Log.Error("GetData(string highlightingName) " + ex.Message);
+
 				return new List<ICompletionData>();
 			}
 		}

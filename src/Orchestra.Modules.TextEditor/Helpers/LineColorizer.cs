@@ -36,8 +36,6 @@ namespace Orchestra.Modules.TextEditor
 
         protected override void ColorizeLine(ICSharpCode.AvalonEdit.Document.DocumentLine line)
         {
-
-
             if (!line.IsDeleted && line.LineNumber == lineNumber)
             {
                 int start = line.Offset;

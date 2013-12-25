@@ -81,7 +81,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
-    <None Include="Fody.targets" />
+    <None Include="Fody.targets">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -95,8 +97,8 @@
     <Compile Include="Helpers\MyCompletionData.cs" />
     <Compile Include="Intellisense\CompletionWindowResolver.cs" />
     <Compile Include="Intellisense\FileCompletionDataProvider.cs" />
-    <Compile Include="Intellisense\ICompletionDataProvider.cs" />
-    <Compile Include="Intellisense\ICompletionWindowResolver.cs" />
+    <Compile Include="Intellisense\Interfaces\ICompletionDataProvider.cs" />
+    <Compile Include="Intellisense\Interfaces\ICompletionWindowResolver.cs" />
     <Compile Include="Intellisense\TextCompletionData.cs" />
     <Compile Include="Models\MatchItem.cs" />
     <Compile Include="TextEditorModule.cs" />
@@ -125,7 +127,9 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Intellisense\Models\" />
+  </ItemGroup>
   <ItemGroup>
     <Page Include="ResourceDictionary.xaml">
       <Generator>MSBuild:Compile</Generator>

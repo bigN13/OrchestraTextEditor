@@ -24,7 +24,7 @@ namespace Orchestra.Modules.TextEditor.Intellisense
         /// </summary>
         /// <param name="text"></param>
         /// <param name="position"></param>
-        /// <param name="input"></param>
+        /// <param name="input"></param>+
         /// <param name="textEditor"></param>
         public CompletionWindowResolver(string text, int position, string input, ICSharpCode.AvalonEdit.TextEditor textEditor)
 		{
