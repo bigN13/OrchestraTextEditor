@@ -412,9 +412,10 @@ namespace Orchestra.Modules.TextEditor
         #region Internal Close
         internal void Close(TextEditorViewModel fileToClose)
         {
-
             //Removes the file from the collection of Documents
             _files.Remove(fileToClose);
+            Log.Info("File closed and removed from collection " + fileToClose.FileName);
+
         }
         #endregion
 
@@ -428,9 +429,9 @@ namespace Orchestra.Modules.TextEditor
                     fileToSave.FilePath = dlg.FileName;
             }
 
-            Log.Info("Saving file : " + fileToSave.FilePath);
-
             File.WriteAllText(fileToSave.FilePath, fileToSave.Document.Text);
+
+            Log.Info("File saved : " + fileToSave.FilePath);
             //ActiveDocument.IsDirty = false;
         }
         #endregion

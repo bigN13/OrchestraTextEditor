@@ -31,12 +31,9 @@ namespace Orchestra.Modules.TextEditor.ViewModels
     /// <summary>
     /// UserControl view model.
     /// </summary>
-    public class TextEditorViewModel : Orchestra.ViewModels.ViewModelBase, IContextualViewModel
+    public partial class TextEditorViewModel : Orchestra.ViewModels.ViewModelBase, IContextualViewModel
     {
         #region Variables - Properties
-        private readonly List<string> _previousPages = new List<string>();
-        private readonly List<string> _nextPages = new List<string>();
-
         private readonly IMessageService _messageService;
         private readonly IOrchestraService _orchestraService;
         private readonly IMessageMediator _messageMediator;
@@ -129,28 +126,9 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             this.Title = FileName;
             #endregion
 
+            // Invalidate the current viewmodel
             ViewModelActivated();
-
-            #region Mediators
-            //var messageMediator = ServiceLocator.Default.ResolveType<IMessageMediator>();
-            //messageMediator.Register<string>(this, OnParse, "selectedItem");
-            #endregion
         }
-
-        //private void OnParse(string SelectedItem)
-        //{
-        //    //MessageBox.Show(SelectedItem);
-
-        //    if (SelectedItem !=null)
-        //    {
-        //        //TextView textView = this._document.TextArea.TextView;
-
-        //        this._document.GetLineByOffset(15);
-        //    }
-
-        //    //Match m = (Match)SelectedItem;
-        //    //webBrowser.Navigate(url, null, null, string.Format("User-Agent: {0}", UserAgent));
-        //}
 
         private void OnTestExecute()
         {
@@ -158,520 +136,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         }
         #endregion
 
-        #region TextEditor View SettinFgs
-
-        #region FilePath
-        private string _filePath = null;
-
-        /// <summary>
-        /// TextEditor Setup FilePath
-        /// </summary>
-        public string FilePath
-        {
-            get { return _filePath; }
-            set
-            {
-                if (_filePath != value)
-                {
-                    _filePath = value;
-                    RaisePropertyChanged("FilePath");
-                    RaisePropertyChanged("FileName");
-                    RaisePropertyChanged("Title");
-
-                    if (File.Exists(this._filePath))
-                    {
-                        //this._document = new TextDocument();
-                        this.Document = new TextDocument();
-                        this.HighlightDef = HighlightingManager.Instance.GetDefinition("C#");
-                        this.IsDirty = false;
-                        this.IsReadOnly = false;
-                        this.ShowLineNumbers = true;
-                        this.WordWrap = false;
-
-                        // Check file attributes and set to read-only if file attributes indicate that
-                        if ((System.IO.File.GetAttributes(this._filePath) & FileAttributes.ReadOnly) != 0)
-                        {
-                            this.IsReadOnly = true;
-                            //this.IsReadOnlyReason = "This file cannot be edit because another process is currently writting to it.\n" +
-                            //                        "Change the file access permissions or save the file in a different location if you want to edit it.";
-                        }
-
-                        using (FileStream fs = new FileStream(this._filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                        {
-                            using (StreamReader reader = FileReader.OpenStream(fs, Encoding.UTF8))
-                            {
-                                //this._document = new TextDocument(reader.ReadToEnd());
-                                this.Document = new TextDocument(reader.ReadToEnd());
-                            }
-                        }
-
-                        ContentId = _filePath;
-                    }
-                }
-            }
-        }
-        #endregion
-
-        #region FileName
-        /// <summary>
-        /// TextEditor - Specify the Name of Sheet
-        /// </summary>
-        public string FileName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(FilePath))
-                    return "Noname" + (IsDirty ? "*" : "");
-
-                this.Title = System.IO.Path.GetFileName(FilePath) + (IsDirty ? "*" : "");
-                return this.Title;
-            }
-        }
-        #endregion FileName
-
-        #region TextContent
-
-        private TextDocument _document = new TextDocument();
-        /// <summary>
-        /// TextEditpr New Document creation
-        /// </summary>
-        public TextDocument Document
-        {
-            get { return this._document; }
-            set
-            {
-                if (this._document != value)
-                {
-                    this._document = value;
-                    RaisePropertyChanged("Document");
-
-                    // Invalidate the ViewModel
-                    //ViewModelActivated();
-
-                    IsDirty = true;
-                }
-            }
-        }
-
-        #endregion
-
-        #region HighlightingDefinition
-
-        private IHighlightingDefinition _highlightdef = null;
-
-        /// <summary>
-        /// TextEditor Highligt Option
-        /// </summary>
-        public IHighlightingDefinition HighlightDef
-        {
-            get { return this._highlightdef; }
-            set
-            {
-                if (this._highlightdef != value)
-                {
-                    this._highlightdef = value;
-                    RaisePropertyChanged("HighlightDef");
-                    IsDirty = true;
-                }
-            }
-        }
-
-        #endregion
-
-
-        #region WordWrap
-        // Toggle state WordWrap
-        private bool mWordWrap = false;
-
-        /// <summary>
-        /// TextEditor Word Wrap Option
-        /// </summary>
-        public bool WordWrap
-        {
-            get
-            {
-                return this.mWordWrap;
-            }
-
-            set
-            {
-                if (this.mWordWrap != value)
-                {
-                    this.mWordWrap = value;
-                    this.RaisePropertyChanged("WordWrap");
-                }
-            }
-        }
-        #endregion WordWrap
-
-        #region ShowLineNumbers
-        // Toggle state ShowLineNumbers
-        private bool mShowLineNumbers = false;
-
-        /// <summary>
-        /// TextEditor Show Line Numbee Option
-        /// </summary>
-        public bool ShowLineNumbers
-        {
-            get
-            {
-                return this.mShowLineNumbers;
-            }
-
-            set
-            {
-                if (this.mShowLineNumbers != value)
-                {
-                    this.mShowLineNumbers = value;
-                    this.RaisePropertyChanged("ShowLineNumbers");
-                }
-            }
-        }
-        #endregion ShowLineNumbers
-
-        #region TextEditorOptions
-        private TextEditorOptions mTextOptions = new TextEditorOptions()
-        {
-            ConvertTabsToSpaces = false,
-            IndentationSize = 2
-        };
-
-        //private TextEditorOptions mTextOptions;
-        /// <summary>
-        /// TextEditor TextOptions
-        /// </summary>
-        public TextEditorOptions TextOptions
-        {
-            get
-            {
-                return this.mTextOptions;
-            }
-            set
-            {
-                if (this.mTextOptions != value)
-                {
-                    this.mTextOptions = value;
-                    this.RaisePropertyChanged("TextOptions");
-                }
-            }
-        }
-        #endregion TextEditorOptions
-
-        // Helpers
-        #region ContentId
-
-        private string _contentId = null;
-        /// <summary>
-        /// TextEditorContentId
-        /// </summary>
-        public string ContentId
-        {
-            get { return _contentId; }
-            set
-            {
-                if (_contentId != value)
-                {
-                    _contentId = value;
-                    RaisePropertyChanged("ContentId");
-                }
-            }
-        }
-
-        #endregion
-        #endregion
-
-        #region Text Editor Commands
-        #region ShowLineNumbers Command
-        /// <summary>
-        /// Gets the ShowLineNumbers command.
-        /// </summary>
-        public Command ShowLineNumbersCommand { get; private set; }
-
-        /// <summary>
-        /// Method to check whether the ShowLineNumbers command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnShowLineNumbersCommandCanExecute()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Method to invoke when the ShowLineNumbers command is executed.
-        /// </summary>
-        private void OnShowLineNumbersCommandExecute()
-        {
-            // If ShowLineNumbers == false then true 
-            ShowLineNumbers = !ShowLineNumbers;
-        }
-        #endregion
-
-        #region WordWrap Command
-        /// <summary>
-        /// Gets the WordWrap command.
-        /// </summary>
-        public Command WordWrapCommand { get; private set; }
-
-        /// <summary>
-        /// Method to check whether the WordWrap command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnWordWrapCommandCanExecute()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Method to invoke when the WordWrap command is executed.
-        /// </summary>
-        private void OnWordWrapCommandExecute()
-        {
-            // Check if WordWrap is false then set to true
-            WordWrap = !WordWrap;
-        }
-        #endregion
-
-        #region EndLine Command
-        /// <summary>
-        /// Gets the EndLine command.
-        /// </summary>
-        public Command EndLineCommand { get; private set; }
-
-        /// <summary>
-        /// Method to check whether the EndLineCommand command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnEndLineCommandCanExecute()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Method to invoke when the EndLineCommand command is executed.
-        /// </summary>
-        private void OnEndLineCommandExecute()
-        {
-            // TODO: Handle command logic here
-            this.TextOptions.ShowEndOfLine = true;
-        }
-        #endregion
-
-        #region ShowSpaces Command
-        /// <summary>
-        /// Gets the EndLine command.
-        /// </summary>
-        public Command ShowSpacesCommand { get; private set; }
-
-        /// <summary>
-        /// Method to check whether the EndLineCommand command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnShowSpacesCommandCanExecute()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Method to invoke when the EndLineCommand command is executed.
-        /// </summary>
-        private void OnShowSpacesCommandExecute()
-        {
-            // Check if ShowSpaces is false else true
-            this.TextOptions.ShowSpaces = !this.TextOptions.ShowSpaces;
-        }
-        #endregion
-
-        #region ShowTab Command
-        /// <summary>
-        /// Gets the EndLine command.
-        /// </summary>
-        public Command ShowTabCommand { get; private set; }
-
-        /// <summary>
-        /// Method to check whether the EndLineCommand command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnShowTabCommandCanExecute()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Method to invoke when the EndLineCommand command is executed.
-        /// </summary>
-        private void OnShowTabCommandExecute()
-        {
-            // Check if ShowSpaces is false else true
-            TextOptions.ShowTabs = !TextOptions.ShowTabs;
-        }
-        #endregion
-
-        #region Close Document Command
-        /// <summary>
-        /// Gets the Close command.
-        /// </summary>
-        public Command CloseDocument { get; private set; }
-
-        /// <summary>
-        /// Method to check whether the Browse command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnCloseCommandCanExecute()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Method to invoke when the Browse command is executed.
-        /// </summary>
-        private void OnCloseDocumentExecute()
-        {
-            if (this.IsDirty)
-            {
-                var res = MessageBox.Show(string.Format("Save changes for file '{0}'?", this.FileName), "TextEditor App", MessageBoxButton.YesNoCancel);
-
-                if (res == MessageBoxResult.Cancel)
-                    return;
-                else if (res == MessageBoxResult.Yes)
-                    Save(this);
-            }
-            _textEditorModule.Close(this);
-            _orchestraService.CloseDocument(this);
-        }
-
-        #endregion
-
-        #region Save Document Command
-        /// <summary>
-        /// Gets the Close command.
-        /// </summary>
-        public Command SaveCommand { get; private set; }
-
-        /// <summary>
-        /// Method to check whether the Browse command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnSaveCommandCanExecute()
-        {
-            return this.IsDirty;
-        }
-
-        /// <summary>
-        /// Method to invoke when the Browse command is executed.
-        /// </summary>
-        private void OnSaveCommandExecute()
-        {
-            Save(this, false);
-        }
-
-        internal void Save(TextEditorViewModel fileToSave, bool saveAsFlag = false)
-        {
-            //_textEditorModule.Save(this);
-
-            if (string.IsNullOrEmpty(fileToSave.FilePath) || saveAsFlag)
-            {
-                var dlg = new SaveFileDialog();
-                if (dlg.ShowDialog().GetValueOrDefault())
-                    fileToSave.FilePath = dlg.FileName;
-                //fileToSave.FilePath = dlg.SafeFileName;
-            }
-
-            File.WriteAllText(fileToSave.FilePath, fileToSave.Document.Text);
-
-            this.IsDirty = false;
-
-            this.Title = FileName;
-        }
-
-        #endregion
-
-        #region SaveAs Document Command
-        /// <summary>
-        /// Gets the Close command.
-        /// </summary>
-        public Command SaveAsCommand { get; private set; }
-
-        /// <summary>
-        /// Method to check whether the Browse command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnSaveAsCommandCanExecute()
-        {
-            return this.IsDirty;
-        }
-
-        /// <summary>
-        /// Method to invoke when the Browse command is executed.
-        /// </summary>
-        private void OnSaveAsCommandExecute()
-        {
-            //bool saveAsFlag = true;
-            _textEditorModule.Save(this, true);
-        }
-
-        #endregion
-
-        #region Update Document Command
-        /// <summary>
-        /// Gets the Update command.
-        /// </summary>
-        public Command UpdateCommand { get; private set; }
-
-        /// <summary>
-        /// Method to check whether the Browse command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnUpdateCommandCanExecute()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Method to invoke when the Browse command is executed.
-        /// </summary>
-        private void OnUpdateCommandExecute()
-        {
-            //bool saveAsFlag = true;
-            //_textEditorModule.Save(this, true);
-            UpdateContextSensitiveData();
-        }
-
-        #endregion
-        #endregion
-
-        #region Properties
-
-        #region Url property
-        /// <summary>
-        /// Gets or sets the URL.
-        /// </summary>
-        /// <value>The URL.</value>        
-        public string Url
-        {
-            get { return GetValue<string>(UrlProperty); }
-            set { SetValue(UrlProperty, value); }
-        }
-
-        /// <summary>
-        /// Url property data.
-        /// </summary>
-        public static readonly PropertyData UrlProperty = RegisterProperty("Url", typeof(string), null, (s, e) => ((TextEditorViewModel)(s)).OnUrlChanged(e));
-
-        /// <summary>
-        /// Called when the Url has changed.
-        /// </summary>
-        /// <param name="e">The <see cref="AdvancedPropertyChangedEventArgs"/> instance containing the event data.</param>
-        private void OnUrlChanged(AdvancedPropertyChangedEventArgs e)
-        {
-            UpdateContextSensitiveData();
-        }
-        #endregion
-
-        /// <summary>
-        /// Gets the name of the URL changed message.
-        /// </summary>
-        /// <value>The name of the URL changed message.</value>
-        public string UrlChangedMessageTag { get { return string.Format("{0}_{1}", TextEditorModule.Name, UniqueIdentifier); } }
+        #region Changing language
 
         /// <summary>
         /// Gets the recent sites.
@@ -679,10 +144,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <value>
         /// The recent sites.
         /// </value>
-        //public string[] SyntaxHighlighting { get { return new[] { "Orchestra", "Catel" }; } }
         public string[] SyntaxHighlighting { get { return new[] { "XML", "C#", "C++", "PHP", "Java" }; } }
-
-        #region SelectedSite property
 
         /// <summary>
         /// Gets or sets the SelectedSite value.
@@ -696,7 +158,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <summary>
         /// SelectedSite property data.
         /// </summary>
-        public static readonly PropertyData SelectedLanugageProperty = RegisterProperty("SelectedSite", typeof(string), null,
+        public static readonly PropertyData SelectedLanugageProperty = RegisterProperty("SelectedLanguage", typeof(string), null,
             (sender, e) => ((TextEditorViewModel)sender).OnSelectedLanguageChanged());
 
         /// <summary>
@@ -706,13 +168,15 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             switch (SelectedLanguage)
             {
-                case "XML":
-                    Url = "http://www.github.com/Orcomp/Orchestra";
-                    break;
+                // TODO: Implement logic for changing Programming language
 
-                case "C#":
-                    Url = "http://www.catelproject.com";
-                    break;
+                //case "XML":
+                //    Url = "http://www.github.com/Orcomp/Orchestra";
+                //    break;
+
+                //case "C#":
+                //    Url = "http://www.catelproject.com";
+                //    break;
 
                 default:
                     return;
@@ -720,21 +184,18 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
             //_this.OnBrowseExecute();
         }
-        #endregion
 
         #endregion
 
+        #region ViewModel Related
 
         /// <summary>
         /// Method is called when the active view changes within the orchestra application
         /// </summary>
         public void ViewModelActivated()
         {
-            //_textEditorModule.ActiveDocument = this;
-
             UpdateContextSensitiveData();
         }
-
 
         /// <summary>
         /// Saves the data.
@@ -750,9 +211,9 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
             // Remove this file from Collection
             _textEditorModule.Close(this);
+
             return true;
         }
-
 
         /// <summary>
         /// Update the context sensitive data, related to this view.
@@ -765,8 +226,6 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             }
             else
             {
-                _propertiesViewModel.Url = Url;
-
                 MethodsCollection();
 
                 if (_propertiesViewModel.MethodSignatureCollection != null)
@@ -778,8 +237,15 @@ namespace Orchestra.Modules.TextEditor.ViewModels
                 _propertiesViewModel.currentFileName = FileName;
             }
         }
+        
+        #endregion
 
         #region Document map
+        /// <summary>
+        /// Responsible for parsing the Text and return the collection 
+        /// for Document Map
+        /// </summary>
+        /// <returns></returns>
         private List<MatchItem> MethodsCollection()
         {
             List<MatchItem> methodsCollection = new List<MatchItem>();
@@ -811,6 +277,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             // Finally, .*$ causes the regex to actually match the line, after the lookaheads have determined it meets the requirements.
             #endregion
 
+            // Specify the correct match pattern
+            // need to be altered for different language
             string regextPattern2 = @"^.*\b(namespace|private|public|sealed|protected|virtual|internal)\b.*$";
 
             try
@@ -823,11 +291,16 @@ namespace Orchestra.Modules.TextEditor.ViewModels
                     + ex.Message + "\n", "orchestra TextEditor Error");
             }
 
-            for (int i = 1; i < this._document.LineCount; i++)
+            for (int i = 1; i < _document.LineCount; i++)
             {
-                DocumentLine line = this._document.GetLineByNumber(i);
+                // Get the current line number
+                DocumentLine line = _document.GetLineByNumber(i);
 
-                m = r.Match(this._document.GetText(line));
+                // Try to Match the contect fo line with specified pattern
+                m = r.Match(_document.GetText(line));
+
+                // If line is has match create new MatchItem and add it 
+                // to collection
                 if (m.Success)
                 {
                     MatchItem mi = new MatchItem();

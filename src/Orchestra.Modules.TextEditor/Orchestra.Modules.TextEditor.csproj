@@ -107,6 +107,8 @@
     <Compile Include="ViewModels\MapViewModel.cs" />
     <Compile Include="ViewModels\TextEditorViewModel.cs" />
     <Compile Include="ViewModels\PropertiesViewModel.cs" />
+    <Compile Include="ViewModels\TextEditorViewModel.commands.cs" />
+    <Compile Include="ViewModels\TextEditorViewModel.settings.cs" />
     <Compile Include="Views\DocumentMapWindow.xaml.cs">
       <DependentUpon>DocumentMapWindow.xaml</DependentUpon>
     </Compile>

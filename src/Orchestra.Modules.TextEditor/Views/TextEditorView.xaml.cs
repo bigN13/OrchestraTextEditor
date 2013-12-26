@@ -118,10 +118,10 @@ namespace Orchestra.Modules.TextEditor.Views
             var vm = ViewModel as TextEditorViewModel;
             if (vm != null)
             {
-                if (!string.IsNullOrWhiteSpace(vm.Url))
-                {
-                    OnBrowse(vm.Url);
-                }
+                //if (!string.IsNullOrWhiteSpace(vm.Url))
+                //{
+                //    OnBrowse(vm.Url);
+                //}
 
                 // Register to the message sent from Document Map
                 var messageMediator = ServiceLocator.Default.ResolveType<IMessageMediator>();
