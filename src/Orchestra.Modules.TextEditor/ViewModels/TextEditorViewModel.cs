@@ -204,19 +204,24 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <returns><c>true</c> if successful; otherwise <c>false</c>.</returns>
         protected override bool Save()
         {
-            if (_messageService.Show("Are you sure you want to close this window?", button: MessageButton.YesNo) == MessageResult.No)
+            if (_messageService.Show("Are you sure you want to close this window?", "Are you sure?", MessageButton.YesNo) == MessageResult.Yes)
+            {
+                // Remove this file from Collection
+                _textEditorModule.Close(this);
+
+                return true;
+            }
+            else
             {
                 return false;
             }
-
-            // Remove this file from Collection
-            _textEditorModule.Close(this);
-
-            return true;
         }
 
         /// <summary>
-        /// Update the context sensitive data, related to this view.
+        /// Update the context sensitive data, related to current view.
+        /// Everytime the View is changed 
+        /// the activeview source is parsed in MethodsCollection and sent to the _propertiesViewModel
+        /// to update the document map
         /// </summary>
         private void UpdateContextSensitiveData()
         {
@@ -226,15 +231,13 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             }
             else
             {
-                MethodsCollection();
-
                 if (_propertiesViewModel.MethodSignatureCollection != null)
                 {
                     _propertiesViewModel.MethodSignatureCollection.Clear();
                 }
 
                 _propertiesViewModel.MethodSignatureCollection = MethodsCollection();
-                _propertiesViewModel.currentFileName = FileName;
+                _propertiesViewModel.CurrentViewModelUniqueIdentifier = this.UniqueIdentifier;
             }
         }
         
@@ -287,8 +290,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show("There was an error in the regular expression!\n\n"
-                    + ex.Message + "\n", "orchestra TextEditor Error");
+                _messageService.ShowError("There was an error in the regular expression!\n\n"
+                    + ex.Message + "\n", "Error");
             }
 
             for (int i = 1; i < _document.LineCount; i++)

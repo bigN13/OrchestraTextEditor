@@ -170,12 +170,15 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             if (this.IsDirty)
             {
-                var res = MessageBox.Show(string.Format("Save changes for file '{0}'?", this.FileName), "TextEditor App", MessageBoxButton.YesNoCancel);
-
-                if (res == MessageBoxResult.Cancel)
-                    return;
-                else if (res == MessageBoxResult.Yes)
+                
+                if (_messageService.Show(string.Format("Save changes for file '{0}'?", this.FileName), "Are you sure?", MessageButton.YesNo) == MessageResult.Yes)
+                {
                     Save(this);
+                }
+                else
+                {
+                    return;
+                }     
             }
             _textEditorModule.Close(this);
             _orchestraService.CloseDocument(this);

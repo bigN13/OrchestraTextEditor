@@ -64,13 +64,6 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         #endregion
 
         #region Properties
-        /// <summary>
-        /// Gets or sets the URL.
-        /// </summary>
-        /// <value>
-        /// The URL.
-        /// </value>
-        public string Url { get; set; }
 
         /// <summary>
         /// Gets or sets the MethodSignatureCollection
@@ -80,7 +73,12 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <summary>
         /// Gets or sets the Current FileName
         /// </summary>
-        public string currentFileName { get; set; }
+        public string CurrentFileName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Current ViewModelUniqueIdentifier
+        /// </summary>
+        public int CurrentViewModelUniqueIdentifier { get; set; }
 
         /// <summary>
         /// Gets or sets the MethodSignatureCollection
@@ -113,7 +111,9 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             if (SelectectedDocumentItem != null)
             {
                 // Passing the currentFileName to differentiate the mediator message
-                _messageMediator.SendMessage(SelectectedDocumentItem, currentFileName);
+                _messageMediator.SendMessage(SelectectedDocumentItem, CurrentViewModelUniqueIdentifier);
+
+
             }           
         }
         #endregion

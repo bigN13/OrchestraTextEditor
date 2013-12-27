@@ -341,7 +341,8 @@ namespace Orchestra.Modules.TextEditor
             var orcaViewModel = _files.FirstOrDefault(fm => fm.FilePath == filepath);
             if (orcaViewModel != null)
             {
-                MessageBox.Show(string.Format("The file '{0}' is already Opened", orcaViewModel.FileName), "TextEditor App", MessageBoxButton.OK);
+                var messageService = GetService<IMessageService>();
+                messageService.ShowError(string.Format("The file '{0}' is already Opened", orcaViewModel.FileName));
 
                 Log.Warning("File is already opened " + orcaViewModel.FileName);
 
