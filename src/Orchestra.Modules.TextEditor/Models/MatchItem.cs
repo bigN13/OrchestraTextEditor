@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace Orchestra.Modules.TextEditor.Models
 {
     /// <summary>
-    /// Match Document Item
+    /// Match Document Item, used for parsing documents
     /// </summary>
     public class MatchItem
     {

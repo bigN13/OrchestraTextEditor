@@ -118,6 +118,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             SaveCommand = new Command(OnSaveCommandExecute, OnSaveCommandCanExecute);
             CloseDocument = new Command(OnCloseDocumentExecute, OnCloseCommandCanExecute);
             UpdateCommand = new Command(OnUpdateCommandExecute, OnUpdateCommandCanExecute);
+
+            ScriptCSCommand = new Command(OnScriptCSCommandExecute, OnScriptCSCommandCanExecute);
             #endregion
 
             #region Document related

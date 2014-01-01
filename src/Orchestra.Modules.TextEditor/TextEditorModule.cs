@@ -216,18 +216,12 @@ namespace Orchestra.Modules.TextEditor
             ribbonService.RegisterContextualRibbonItem<TextEditorView>(
              new RibbonButton(Name, "Text Editor", "LineNumbers", "ShowLineNumbersCommand") { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/Edit_Numbers32.png" },
              ModuleName);
+            #endregion
 
-            //ribbonService.RegisterContextualRibbonItem<TextEditorView>(
-            // new RibbonButton(Name, "Text Editor", "EndLine", "EndLineCommand") { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/Edit_EndLine32.png" },
-            // ModuleName);
-
-            //ribbonService.RegisterContextualRibbonItem<TextEditorView>(
-            //new RibbonButton(Name, "Text Editor", "ShowSpaces", "ShowSpacesCommand") { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/ShowSpaces32.png" },
-            //ModuleName);
-
-            //ribbonService.RegisterContextualRibbonItem<TextEditorView>(
-            //new RibbonButton(Name, "Text Editor", "ShowTab", "ShowTabCommand") { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/ShowTab32.png" },
-            //ModuleName);
+            #region ScriptCS  Buttons
+            ribbonService.RegisterContextualRibbonItem<TextEditorView>(
+               new RibbonButton(Name, "Run ScriptCS", "ScriptCS", "ScriptCSCommand") { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/Smiley_Happy.png" },
+               ModuleName);
 
             #endregion
 

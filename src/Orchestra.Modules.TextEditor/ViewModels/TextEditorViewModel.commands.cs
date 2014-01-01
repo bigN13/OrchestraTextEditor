@@ -18,6 +18,8 @@ using System.Text.RegularExpressions;
 using ICSharpCode.AvalonEdit.Rendering;
 using Catel.Logging;
 using Orchestra.Models;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Orchestra.Modules.TextEditor.ViewModels
 {
@@ -45,6 +47,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             // If ShowLineNumbers == false then true 
             ShowLineNumbers = !ShowLineNumbers;
+            Log.Info("Show Hide Line Numbers");
         }
         #endregion
 
@@ -70,6 +73,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             // Check if WordWrap is false then set to true
             WordWrap = !WordWrap;
+            Log.Info("Show Hide Word Wrap");
         }
         #endregion
 
@@ -95,6 +99,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             // TODO: Handle command logic here
             this.TextOptions.ShowEndOfLine = true;
+            Log.Info("Show End Of Line");
         }
         #endregion
 
@@ -120,6 +125,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             // Check if ShowSpaces is false else true
             this.TextOptions.ShowSpaces = !this.TextOptions.ShowSpaces;
+            Log.Info("Show Spaces");
         }
         #endregion
 
@@ -145,6 +151,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             // Check if ShowSpaces is false else true
             TextOptions.ShowTabs = !TextOptions.ShowTabs;
+            Log.Info("Show Tabs");
+
         }
         #endregion
 
@@ -222,6 +230,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             }
 
             File.WriteAllText(fileToSave.FilePath, fileToSave.Document.Text);
+            Log.Info("File wirtten: " + fileToSave.FilePath);
 
             this.IsDirty = false;
 
@@ -279,6 +288,69 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             //bool saveAsFlag = true;
             //_textEditorModule.Save(this, true);
             UpdateContextSensitiveData();
+        }
+
+        #endregion
+
+        #region Run ScriptCS Command
+        /// <summary>
+        /// Gets the Update command.
+        /// </summary>
+        public Command ScriptCSCommand { get; private set; }
+
+        /// <summary>
+        /// Method to check whether the Browse command can be executed.
+        /// </summary>
+        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
+        private bool OnScriptCSCommandCanExecute()
+        {
+            return true;
+        }
+
+        [DllImport("kernel32.dll", EntryPoint = "AllocConsole", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        private static extern int AllocConsole();
+
+        /// <summary>
+        /// Method to invoke when the Browse command is executed.
+        /// </summary>
+        private void OnScriptCSCommandExecute()
+        {
+            //  /C      Carries out the command specified by string and then terminates
+            //  /K      Carries out the command specified by string but remains
+
+            System.Diagnostics.Process process = new System.Diagnostics.Process();
+            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            startInfo.WorkingDirectory = Path.GetDirectoryName(_filePath);
+            //startInfo.WorkingDirectory = @"K:\SCRIPTCS\webapi";
+            //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            startInfo.FileName = "cmd.exe";
+
+            startInfo.Arguments = "/K scriptcs " + Title.TrimEnd('*');
+
+            process.StartInfo = startInfo;
+
+            process.Start();
+
+            process.WaitForExit();
+
+            //var startInfo = new ProcessStartInfo
+            //{
+            //    FileName = "server.csx",
+            //    WorkingDirectory = @"K:\SCRIPTCS\webapi",
+            //    //Arguments = "scriptcs"
+            //    //Arguments = "/c scriptcs server.csx"
+            //    //RedirectStandardInput = true,
+            //    //RedirectStandardOutput = true,
+            //    //UseShellExecute = false,
+            //    //CreateNoWindow = true
+            //};
+
+            //var process = new Process { StartInfo = startInfo };
+
+            ////process.Start();
+            ////process.StandardInput.WriteLine("scriptcs server.csx");
+            ////process.StandardInput.WriteLine(@"dir>c:\results2.txt");
+            ////process.StandardInput.WriteLine("exit");
         }
 
         #endregion
