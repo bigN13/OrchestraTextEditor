@@ -221,20 +221,22 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             //_textEditorModule.Save(this);
 
-            if (string.IsNullOrEmpty(fileToSave.FilePath) || saveAsFlag)
-            {
-                var dlg = new SaveFileDialog();
-                if (dlg.ShowDialog().GetValueOrDefault())
-                    fileToSave.FilePath = dlg.FileName;
-                //fileToSave.FilePath = dlg.SafeFileName;
-            }
+            _textEditorModule.Save(this, false);
 
-            File.WriteAllText(fileToSave.FilePath, fileToSave.Document.Text);
-            Log.Info("File wirtten: " + fileToSave.FilePath);
+            //if (string.IsNullOrEmpty(fileToSave.FilePath) || saveAsFlag)
+            //{
+            //    var dlg = new SaveFileDialog();
+            //    if (dlg.ShowDialog().GetValueOrDefault())
+            //        fileToSave.FilePath = dlg.FileName;
+            //    //fileToSave.FilePath = dlg.SafeFileName;
+            //}
 
-            this.IsDirty = false;
+            //File.WriteAllText(fileToSave.FilePath, fileToSave.Document.Text);
+            //Log.Info("File wirtten: " + fileToSave.FilePath);
+            Title = FileName;
+            IsDirty = false;
 
-            this.Title = FileName;
+
         }
 
         #endregion
@@ -251,7 +253,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
         private bool OnSaveAsCommandCanExecute()
         {
-            return this.IsDirty;
+            return IsDirty;
         }
 
         /// <summary>
@@ -261,6 +263,10 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             //bool saveAsFlag = true;
             _textEditorModule.Save(this, true);
+
+            IsDirty = false;
+            Title = FileName;
+
         }
 
         #endregion
@@ -304,7 +310,9 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
         private bool OnScriptCSCommandCanExecute()
         {
-            return true;
+            bool result = (Path.GetExtension(_filePath) == ".csx") ? true : false;
+
+            return result;
         }
 
         [DllImport("kernel32.dll", EntryPoint = "AllocConsole", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]

@@ -216,6 +216,7 @@
     <Content Include="Intellisense\Keywords\options.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\Images\App\cs_32.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Orchestra.Library.NET40\Orchestra.Library.NET40.csproj">

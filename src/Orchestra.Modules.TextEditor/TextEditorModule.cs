@@ -39,6 +39,7 @@ namespace Orchestra.Modules.TextEditor
         /// </summary>
         public const string Name = "TextEditor";
         private IOrchestraService orchestraService;
+        //private readonly ISaveFileService saveFileService;
 
         private readonly IUIVisualizerService _uiVisualizerService;
 
@@ -96,8 +97,10 @@ namespace Orchestra.Modules.TextEditor
             : base(Name)
         {
             Argument.IsNotNull(() => uiVisualizerService);
+            //Argument.IsNotNull(() => saveFileService);
 
             _uiVisualizerService = uiVisualizerService;
+            
         }
 
         /// <summary>
@@ -220,13 +223,13 @@ namespace Orchestra.Modules.TextEditor
 
             #region ScriptCS  Buttons
             ribbonService.RegisterContextualRibbonItem<TextEditorView>(
-               new RibbonButton(Name, "Run ScriptCS", "ScriptCS", "ScriptCSCommand") { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/Smiley_Happy.png" },
+               new RibbonButton(Name, "Run ScriptCS", "ScriptCS", "ScriptCSCommand") { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/cs_32.png" },
                ModuleName);
 
             #endregion
 
             ribbonService.RegisterContextualRibbonItem<TextEditorView>(
-             new RibbonButton(Name, "Document", "Map", new Command(() => ShowDocumentMapCommand.Execute(null))) { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/Edit_WordWrap32.png" },
+             new RibbonButton(Name, "Document", "Map", new Command(() => ShowDocumentMapCommand.Execute(null))) { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/ShowWordWrap32.png" },
              ModuleName);
 
             #region TextEditor Module
@@ -414,20 +417,31 @@ namespace Orchestra.Modules.TextEditor
         }
         #endregion
 
+
         #region Internal Save
         internal void Save(TextEditorViewModel fileToSave, bool saveAsFlag = false)
         {
             if (string.IsNullOrEmpty(fileToSave.FilePath) || saveAsFlag)
             {
-                var dlg = new SaveFileDialog();
-                if (dlg.ShowDialog().GetValueOrDefault())
-                    fileToSave.FilePath = dlg.FileName;
+                var saveFileService = GetService<ISaveFileService>();
+
+                var defExtentsion = Path.GetExtension(fileToSave.FilePath);
+                saveFileService.FileName = fileToSave.FileName.TrimEnd('*');
+                saveFileService.Filter = string.Format("*{0}|*{0}", defExtentsion);
+                
+                if (!saveFileService.DetermineFile())
+                {
+                    return;
+                }
+
+                fileToSave.FilePath = saveFileService.FileName;
             }
 
+           
             File.WriteAllText(fileToSave.FilePath, fileToSave.Document.Text);
 
             Log.Info("File saved : " + fileToSave.FilePath);
-            //ActiveDocument.IsDirty = false;
+            //fileToSave.IsDirty = false;
         }
         #endregion
 
