@@ -245,7 +245,6 @@ namespace Orchestra.Modules.TextEditor
             // Find the template to show as dynamic content. TODO: Refactor, make more elegant.
             var template = Application.Current.Resources["TestTemplate"] as DataTemplate;
 
-            ribbonService.RegisterContextualRibbonItem<TextEditorView>(new RibbonContentControl(Name, "Dynamic content") { ContentTemplate = template, Layout = new RibbonItemLayout { Width = 120 } }, ModuleName);
 
             ribbonService.RegisterRibbonItem(new RibbonButton(OrchestraResources.ViewRibbonTabName, ModuleName, "TextEditor properties", new Command(() =>
             {
@@ -310,20 +309,23 @@ namespace Orchestra.Modules.TextEditor
         /// </summary>
         private void OpenDocumentCommandExecute()
         {
-            // TODO: Handle command logic here
-            var dlg = new OpenFileDialog();
-            if (dlg.ShowDialog().GetValueOrDefault())
+            var openFileService = GetService<IOpenFileService>();
+            openFileService.Filter = "*.*|*.*";
+
+            if (!openFileService.DetermineFile())
             {
-                try
-                {
-                    var fileViewModel = Open(dlg.FileName);
-                    _files.Add(fileViewModel);
-                    ActiveDocument = fileViewModel;
-                }
-                catch (Exception ex)
-                {
-                    Log.ErrorWithData(ex, "Error Opening File " + dlg.FileName);
-                }
+                return;
+            }
+
+            try
+            {
+                var fileViewModel = Open(openFileService.FileName);
+                _files.Add(fileViewModel);
+                ActiveDocument = fileViewModel;
+            }
+            catch (Exception ex)
+            {
+                Log.ErrorWithData(ex, "Error Opening File " + openFileService.FileName);
             }
         }
 

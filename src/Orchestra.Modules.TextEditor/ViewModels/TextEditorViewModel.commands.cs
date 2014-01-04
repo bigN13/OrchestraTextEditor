@@ -176,12 +176,13 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         private void OnCloseDocumentExecute()
         {
-            if (this.IsDirty)
+            if (IsDirty)
             {
-                
                 if (_messageService.Show(string.Format("Save changes for file '{0}'?", this.FileName), "Are you sure?", MessageButton.YesNo) == MessageResult.Yes)
                 {
-                    Save(this);
+                    _textEditorModule.Save(this);
+                    Log.Info(string.Format("Current file {0} is saved!", FileName));
+
                 }
                 else
                 {
@@ -190,6 +191,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             }
             _textEditorModule.Close(this);
             _orchestraService.CloseDocument(this);
+            Log.Info(string.Format("Current file {0} is closed!", FileName));
+
         }
 
         #endregion
@@ -206,7 +209,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
         private bool OnSaveCommandCanExecute()
         {
-            return this.IsDirty;
+            return IsDirty;
         }
 
         /// <summary>
@@ -214,30 +217,13 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         private void OnSaveCommandExecute()
         {
-            Save(this, false);
-        }
-
-        internal void Save(TextEditorViewModel fileToSave, bool saveAsFlag = false)
-        {
-            //_textEditorModule.Save(this);
-
             _textEditorModule.Save(this, false);
 
-            //if (string.IsNullOrEmpty(fileToSave.FilePath) || saveAsFlag)
-            //{
-            //    var dlg = new SaveFileDialog();
-            //    if (dlg.ShowDialog().GetValueOrDefault())
-            //        fileToSave.FilePath = dlg.FileName;
-            //    //fileToSave.FilePath = dlg.SafeFileName;
-            //}
-
-            //File.WriteAllText(fileToSave.FilePath, fileToSave.Document.Text);
-            //Log.Info("File wirtten: " + fileToSave.FilePath);
-            Title = FileName;
             IsDirty = false;
-
-
+            //Title = FileName;
         }
+
+    
 
         #endregion
 
@@ -253,7 +239,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
         private bool OnSaveAsCommandCanExecute()
         {
-            return IsDirty;
+            return true;
         }
 
         /// <summary>
@@ -265,8 +251,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             _textEditorModule.Save(this, true);
 
             IsDirty = false;
-            Title = FileName;
-
+            //Title = FileName;
         }
 
         #endregion

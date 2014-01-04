@@ -101,11 +101,12 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
 
             // Set Highlightning to C#
-            this.HighlightDef = HighlightingManager.Instance.GetDefinition("C#");
+            HighlightDef = HighlightingManager.Instance.GetDefinition("C#");
+            SelectedLanguage = "C#";
             //this._isDirty = false;
-            this.IsReadOnly = false;
-            this.ShowLineNumbers = true;
-            this.WordWrap = false;
+            IsReadOnly = false;
+            ShowLineNumbers = true;
+            WordWrap = false;
 
             // Comands
             ShowLineNumbersCommand = new Command(OnShowLineNumbersCommandExecute, OnShowLineNumbersCommandCanExecute);
@@ -125,7 +126,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             #region Document related
 
             //CloseDocument = new Command(OnCloseDocumentExecute);
-            this.Title = FileName;
+            Title = FileName;
             #endregion
 
             // Invalidate the current viewmodel
@@ -208,8 +209,19 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             if (_messageService.Show("Are you sure you want to close this window?", "Are you sure?", MessageButton.YesNo) == MessageResult.Yes)
             {
+                if (IsDirty)
+                {
+                    if (_messageService.Show(string.Format("Save changes for file '{0}'?", this.FileName), "Are you sure?", MessageButton.YesNo) == MessageResult.Yes)
+                    {
+                        _textEditorModule.Save(this);
+
+                        Log.Info(string.Format("Current file {0} is saved!",FileName));
+
+                    }
+                }
                 // Remove this file from Collection
                 _textEditorModule.Close(this);
+                Log.Info(string.Format("Current file {0} is closed!", FileName));
 
                 return true;
             }

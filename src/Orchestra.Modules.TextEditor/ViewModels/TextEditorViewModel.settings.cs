@@ -51,12 +51,12 @@ namespace Orchestra.Modules.TextEditor.ViewModels
                 if (File.Exists(_filePath))
                 {
                     //this._document = new TextDocument();
-                    this.Document = new TextDocument();
-                    this.HighlightDef = HighlightingManager.Instance.GetDefinition("C#");
-                    this.IsDirty = false;
-                    this.IsReadOnly = false;
-                    this.ShowLineNumbers = true;
-                    this.WordWrap = false;
+                    Document = new TextDocument();
+                    HighlightDef = HighlightingManager.Instance.GetDefinition("C#");
+                    IsDirty = true;
+                    IsReadOnly = false;
+                    ShowLineNumbers = true;
+                    WordWrap = false;
 
                     // Check file attributes and set to read-only if file attributes indicate that
                     if ((System.IO.File.GetAttributes(_filePath) & FileAttributes.ReadOnly) != 0)
@@ -84,6 +84,30 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
         #endregion
 
+        #region IsDirty
+
+        private bool _isDirty = false;
+        /// <summary>
+        /// Define if document is dirty, changed then notify the Title and Filename properties
+        /// </summary>
+        public new bool IsDirty
+        {
+            get { return _isDirty; }
+            set
+            {
+                if (_isDirty != value)
+                {
+                    _isDirty = value;
+                    RaisePropertyChanged("IsDirty");
+                    RaisePropertyChanged("Title");
+                    RaisePropertyChanged("FileName");
+                }
+            }
+        }
+
+        #endregion
+
+
         #region FileName
         /// <summary>
         /// TextEditor - Specify the Name of Sheet
@@ -99,6 +123,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
                 return Title;
             }
         }
+
+      
         #endregion FileName
 
         #region TextContent
