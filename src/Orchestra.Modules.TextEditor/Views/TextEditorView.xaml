@@ -9,11 +9,7 @@
 						xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 						xmlns:controls="clr-namespace:Orchestra.Modules.TextEditor"
 						mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="300">
-   
-
 	<catel:StackGrid>
-		
-
 		<avalonEdit:TextEditor Grid.ColumnSpan="4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"	
 			x:Name="textEditor"
 			FontSize="10pt" 

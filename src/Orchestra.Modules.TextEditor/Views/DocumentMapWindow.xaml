@@ -26,27 +26,10 @@
             <ColumnDefinition />
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
-
         </Grid.ColumnDefinitions>
-        <Menu Grid.Row="0" Margin="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.RowSpan="2" Grid.ColumnSpan="3">
-            <MenuItem Header="_File">
-                <MenuItem Header="_New..." />
-                <Separator />
-                <MenuItem Header="_Open..." />
-                <Separator />
-                <MenuItem Header="_Save" />
-                <MenuItem Header="_Save As..." />
-                <Separator />
-                <MenuItem Header="_Exit" />
-            </MenuItem>
-         
-            <MenuItem Header="_Help">
-                <MenuItem Header="_Regular Expressions ..." />
-            </MenuItem>
-        </Menu>
-        <Label Content="Regular" HorizontalAlignment="Stretch" Margin="5,5,5,0" Grid.Row="2" VerticalAlignment="Top"/>
-        <Button Content="Save" Grid.Column="2" HorizontalAlignment="Stretch" Margin="5,5,5,0" Grid.Row="2" VerticalAlignment="Top" Width="75"/>
-        <TextBox HorizontalAlignment="Stretch" Grid.ColumnSpan="3"  Margin="5" Grid.Row="3" TextWrapping="Wrap" Text="^.*\b(private|public|sealed|protected|virtual|internal)\b.*$" VerticalAlignment="Stretch" />
+      
+        <Label Content="Regular Expression" HorizontalAlignment="Stretch" Margin="5,5,5,0" Grid.Row="2" VerticalAlignment="Top"/>
+        <TextBox HorizontalAlignment="Stretch" Grid.ColumnSpan="3"  Margin="5" Grid.Row="3" TextWrapping="Wrap" Text="{Binding RegexContent}" />
         </Grid>
 
 </catel:DataWindow>

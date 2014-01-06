@@ -228,9 +228,13 @@ namespace Orchestra.Modules.TextEditor
 
             #endregion
 
+            //ribbonService.RegisterContextualRibbonItem<TextEditorView>(
+            // new RibbonButton(Name, "Document", "Map", new Command(() => ShowDocumentMapCommand.Execute(null))) { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/ShowWordWrap32.png" },
+            // ModuleName);
+
             ribbonService.RegisterContextualRibbonItem<TextEditorView>(
-             new RibbonButton(Name, "Document", "Map", new Command(() => ShowDocumentMapCommand.Execute(null))) { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/ShowWordWrap32.png" },
-             ModuleName);
+              new RibbonButton(Name, "Document", "Map", "DocumentMapOpenCommand") { ItemImage = "/Orchestra.Modules.TextEditor;component/Resources/Images/App/ShowWordWrap32.png" },
+              ModuleName);
 
             #region TextEditor Module
 
@@ -321,7 +325,7 @@ namespace Orchestra.Modules.TextEditor
             {
                 var fileViewModel = Open(openFileService.FileName);
                 _files.Add(fileViewModel);
-                ActiveDocument = fileViewModel;
+                //ActiveDocument = fileViewModel;
             }
             catch (Exception ex)
             {
@@ -374,11 +378,10 @@ namespace Orchestra.Modules.TextEditor
         private void ShowDocumentMapCommandExecute()
         {
             //var viewModel = new MapViewModel();
-            var viewModel = new DocumentMapViewModel();
-            _uiVisualizerService.ShowDialog(viewModel);
+            //var viewModel = new DocumentMapViewModel();
+            //_uiVisualizerService.ShowDialog(viewModel);
 
-            Log.Info("Show Map Window");
-
+            //Log.Info("Show Map Window");
         }
 
 

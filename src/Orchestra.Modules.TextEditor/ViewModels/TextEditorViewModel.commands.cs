@@ -20,6 +20,7 @@ using Catel.Logging;
 using Orchestra.Models;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Catel.IoC;
 
 namespace Orchestra.Modules.TextEditor.ViewModels
 {
@@ -347,5 +348,40 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         }
 
         #endregion
+
+        #region Open Document Map Dialog Command
+        /// <summary>
+        /// Gets the Update command.
+        /// </summary>
+        public Command DocumentMapOpenCommand { get; private set; }
+
+        /// <summary>
+        /// Method to check whether the Browse command can be executed.
+        /// </summary>
+        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
+        private bool OnDocumentMapOpenCanExecute()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Method to invoke when the Browse command is executed.
+        /// </summary>
+        private void OnDocumentMapOpenExecute()
+        {
+            var viewModel = new DocumentMapViewModel(regextPattern);
+
+            var uiVisualizerService = Catel.IoC.ServiceLocator.Default.ResolveType<IUIVisualizerService>();
+            uiVisualizerService.ShowDialog(viewModel);
+
+            Log.Info("Show Map Window");
+
+            //bool saveAsFlag = true;
+            //_textEditorModule.Save(this, true);
+            UpdateContextSensitiveData();
+        }
+
+        #endregion
+
     }
 }

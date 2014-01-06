@@ -10,11 +10,13 @@
     public partial class DocumentMapWindow : DataWindow
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MapWindow"/> class.
+        /// Initializes a new instance of the <see cref="DocumentMapWindow"/> class.
         /// </summary>
         public DocumentMapWindow()
-            : base(DataWindowMode.OkCancel, null, DataWindowDefaultButton.OK, true, InfoBarMessageControlGenerationMode.Inline)
+            : base(DataWindowMode.Close, null, DataWindowDefaultButton.OK, true, InfoBarMessageControlGenerationMode.Inline)
         {
+            AddCustomButton(new DataWindowButton("Save", "SaveRegex"));
+
             InitializeComponent();
         }
     }

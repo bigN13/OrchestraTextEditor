@@ -39,6 +39,9 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         private readonly IMessageMediator _messageMediator;
         private readonly IContextualViewModelManager _contextualViewModelManager;
 
+        private readonly string _path;
+        private string regextPattern;
+
         private PropertiesViewModel _propertiesViewModel;
 
         private TextEditorModule _textEditorModule;
@@ -120,6 +123,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             CloseDocument = new Command(OnCloseDocumentExecute, OnCloseCommandCanExecute);
             UpdateCommand = new Command(OnUpdateCommandExecute, OnUpdateCommandCanExecute);
 
+            DocumentMapOpenCommand = new Command(OnDocumentMapOpenExecute, OnDocumentMapOpenCanExecute);
+
             ScriptCSCommand = new Command(OnScriptCSCommandExecute, OnScriptCSCommandCanExecute);
             #endregion
 
@@ -129,13 +134,41 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             Title = FileName;
             #endregion
 
+            string directory = Catel.IO.Path.GetApplicationDataDirectory("Orchestra.TextEditor");
+
+            // Set the path and Load the default Document Map Settings
+            _path = Path.Combine(directory, "mapsettings.txt");
+            if (File.Exists(_path))
+            {
+                regextPattern = File.ReadAllText(_path);
+            }
+            else
+            {
+                // Set the default value
+                regextPattern = "^.*\b(private|public|sealed|protected|virtual|internal)\b.*$";
+            }
+
+            messageMediator.Register<string>(this, OnDocMapRegexChange);              
+
             // Invalidate the current viewmodel
             ViewModelActivated();
         }
 
-        private void OnTestExecute()
+
+        private void OnDocMapRegexChange(string RegexContent)
         {
-            _messageService.ShowInformation("This is a test, for loading dynamic content into the ribbon...");
+            if (!string.IsNullOrEmpty(RegexContent))
+            {
+                regextPattern = RegexContent;
+
+                // Save the new Regex to Disk
+                File.WriteAllText(_path, regextPattern);
+
+                Log.Info("File saved : " + _path);
+
+                // Invalidate the current viewmodel
+                ViewModelActivated();
+            }
         }
         #endregion
 
@@ -296,11 +329,11 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
             // Specify the correct match pattern
             // need to be altered for different language
-            string regextPattern2 = @"^.*\b(namespace|private|public|sealed|protected|virtual|internal)\b.*$";
+            //string regextPattern2 = @"^.*\b(namespace|private|public|sealed|protected|virtual|internal)\b.*$";
 
             try
             {
-                r = new Regex(regextPattern2, TheOptions);
+                r = new Regex(regextPattern, TheOptions);
             }
             catch (Exception ex)
             {
