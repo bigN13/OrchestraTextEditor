@@ -126,7 +126,7 @@ namespace Orchestra.Modules.TextEditor.Views
             {
                 MatchItem m = SelectedItem;
 
-                textEditor.ScrollTo(m.currentLine, 0);
+                textEditor.ScrollTo(m.CurrentLine, 0);
 
                 if (_colorizerCollection.Count > 0 && textEditor.Document.LineCount > 1)
                 {
@@ -141,7 +141,7 @@ namespace Orchestra.Modules.TextEditor.Views
 
 
                 // Add Colors
-                LineColorizer currentHighligtedLine = new LineColorizer(m.currentLine);
+                LineColorizer currentHighligtedLine = new LineColorizer(m.CurrentLine);
 
                 textEditor.TextArea.TextView.LineTransformers.Add(currentHighligtedLine);
 
@@ -151,7 +151,7 @@ namespace Orchestra.Modules.TextEditor.Views
                 textEditor.TextArea.TextView.Redraw(); 
 
                 //Keep track of previous line
-                _prevHighlightedLine = m.currentLine;
+                _prevHighlightedLine = m.CurrentLine;
             }
         }
         #endregion

@@ -25,254 +25,130 @@ namespace Orchestra.Modules.TextEditor.ViewModels
     public partial class TextEditorViewModel : Orchestra.ViewModels.ViewModelBase, IContextualViewModel
     {
         #region FilePath
-        private string _filePath = null;
-
         /// <summary>
-        /// TextEditor Setup FilePath
+        /// File Path of documnet
         /// </summary>
-        public string FilePath
-        {
-            get { return _filePath; }
-            set
-            {
-                _filePath = OnFilePathChanged(value); 
-            }
-        }
+        public string FilePath { get; set; }
 
-        private string OnFilePathChanged(string value)
+        private void OnFilePathChanged()
         {
-            if (_filePath != value)
-            {
-                _filePath = value;
-                RaisePropertyChanged("FilePath");
-                RaisePropertyChanged("FileName");
-                RaisePropertyChanged("Title");
+            RaisePropertyChanged("FileName");
+            RaisePropertyChanged("Title");
 
-                if (File.Exists(_filePath))
+            if (File.Exists(FilePath))
+            {
+                //this._document = new TextDocument();
+                Document = new TextDocument();
+                HighlightDef = HighlightingManager.Instance.GetDefinition("C#");
+                IsDirtyDoc = true;
+                IsReadOnly = false;
+                ShowLineNumbers = true;
+                WordWrap = false;
+
+                // Check file attributes and set to read-only if file attributes indicate that
+                if ((System.IO.File.GetAttributes(FilePath) & FileAttributes.ReadOnly) != 0)
                 {
-                    //this._document = new TextDocument();
-                    Document = new TextDocument();
-                    HighlightDef = HighlightingManager.Instance.GetDefinition("C#");
-                    IsDirty = true;
-                    IsReadOnly = false;
-                    ShowLineNumbers = true;
-                    WordWrap = false;
-
-                    // Check file attributes and set to read-only if file attributes indicate that
-                    if ((System.IO.File.GetAttributes(_filePath) & FileAttributes.ReadOnly) != 0)
-                    {
-                        this.IsReadOnly = true;
-                        //this.IsReadOnlyReason = "This file cannot be edit because another process is currently writting to it.\n" +
-                        //                        "Change the file access permissions or save the file in a different location if you want to edit it.";
-                    }
-
-                    using (FileStream fs = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                    {
-                        using (StreamReader reader = FileReader.OpenStream(fs, Encoding.UTF8))
-                        {
-                            //this._document = new TextDocument(reader.ReadToEnd());
-                            this.Document = new TextDocument(reader.ReadToEnd());
-                        }
-                    }
-
-                    ContentId = _filePath;
+                    this.IsReadOnly = true;
+                    //this.IsReadOnlyReason = "This file cannot be edit because another process is currently writting to it.\n" +
+                    //                        "Change the file access permissions or save the file in a different location if you want to edit it.";
                 }
-            }
 
-            return _filePath;
+                using (FileStream fs = new FileStream(FilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    using (StreamReader reader = FileReader.OpenStream(fs, Encoding.UTF8))
+                    {
+                        //this._document = new TextDocument(reader.ReadToEnd());
+                        this.Document = new TextDocument(reader.ReadToEnd());
+                    }
+                }
+
+                //ContentId = FilePath;
+            }
         }
 
         #endregion
 
         #region IsDirty
-
-        private bool _isDirty = false;
         /// <summary>
-        /// Define if document is dirty, changed then notify the Title and Filename properties
+        /// Check if document is dirty
         /// </summary>
-        public new bool IsDirty
-        {
-            get { return _isDirty; }
-            set
-            {
-                if (_isDirty != value)
-                {
-                    _isDirty = value;
-                    RaisePropertyChanged("IsDirty");
-                    RaisePropertyChanged("Title");
-                    RaisePropertyChanged("FileName");
-                }
-            }
-        }
+        public bool IsDirtyDoc { get; set; }
 
+        private void OnIsDirtyDocChanged()
+        {
+            //if(IsDirty != IsDirty)
+            //{
+            //RaisePropertyChanged("IsDirty");
+                RaisePropertyChanged("Title");
+                RaisePropertyChanged("FileName");
+            //}
+
+        }
         #endregion
 
 
         #region FileName
         /// <summary>
-        /// TextEditor - Specify the Name of Sheet
+        ///  TextEditor - Specify the Name of Sheet
         /// </summary>
-        public string FileName
+        public string FileName { get; set; }
+
+        private void OnFileNameChanged()
         {
-            get
+            if (string.IsNullOrEmpty(FilePath))
             {
-                if (string.IsNullOrEmpty(FilePath))
-                    return "Noname" + (IsDirty ? "*" : string.Empty);
-
-                Title = System.IO.Path.GetFileName(FilePath) + (IsDirty ? "*" : string.Empty);
-                return Title;
+                Title = "Noname" + (IsDirtyDoc ? "*" : string.Empty);
+                return;
             }
-        }
-
-      
+            
+            Title = FileName = System.IO.Path.GetFileName(FilePath) + (IsDirtyDoc ? "*" : string.Empty);
+        }      
         #endregion FileName
 
         #region TextContent
 
-        private TextDocument _document = new TextDocument();
         /// <summary>
-        /// TextEditpr New Document creation
+        /// Current Document
         /// </summary>
-        public TextDocument Document
+        public TextDocument Document { get; set; }
+
+        private void OnDocumentChanged()
         {
-            get { return _document; }
-            set
-            {
-                if (_document != value)
-                {
-                    _document = value;
-                    RaisePropertyChanged("Document");
-
-                    // Invalidate the ViewModel
-                    //ViewModelActivated();
-
-                    IsDirty = true;
-                }
-            }
+            IsDirtyDoc = true;
         }
-
         #endregion
 
         #region HighlightingDefinition
-
-        private IHighlightingDefinition _highlightdef = null;
-
         /// <summary>
-        /// TextEditor Highligt Option
+        /// Define the Highlighting of document
         /// </summary>
-        public IHighlightingDefinition HighlightDef
-        {
-            get { return this._highlightdef; }
-            set
-            {
-                if (this._highlightdef != value)
-                {
-                    this._highlightdef = value;
-                    RaisePropertyChanged("HighlightDef");
-                    IsDirty = true;
-                }
-            }
-        }
+        public IHighlightingDefinition HighlightDef { get; set; }
 
         #endregion
 
         #region WordWrap
-        // Toggle state WordWrap
-        private bool wordWrap = false;
-
         /// <summary>
-        /// TextEditor Word Wrap Option
+        /// Show Word Wrap of document
         /// </summary>
-        public bool WordWrap
-        {
-            get
-            {
-                return wordWrap;
-            }
+        public bool WordWrap { get; set; }
 
-            set
-            {
-                if (wordWrap != value)
-                {
-                    wordWrap = value;
-                    RaisePropertyChanged("WordWrap");
-                }
-            }
-        }
         #endregion WordWrap
 
         #region ShowLineNumbers
-        // Toggle state ShowLineNumbers
-        private bool showLineNumbers = false;
-
         /// <summary>
-        /// TextEditor Show Line Numbee Option
+        /// Show Line Numbers
         /// </summary>
-        public bool ShowLineNumbers
-        {
-            get
-            {
-                return showLineNumbers;
-            }
+        public bool ShowLineNumbers { get; set; }
 
-            set
-            {
-                if (showLineNumbers != value)
-                {
-                    showLineNumbers = value;
-                    RaisePropertyChanged("ShowLineNumbers");
-                }
-            }
-        }
         #endregion ShowLineNumbers
 
         #region TextEditorOptions
-        private TextEditorOptions textOptions = new TextEditorOptions()
-        {
-            ConvertTabsToSpaces = false,
-            IndentationSize = 2
-        };
 
-        //private TextEditorOptions mTextOptions;
         /// <summary>
         /// TextEditor TextOptions
         /// </summary>
-        public TextEditorOptions TextOptions
-        {
-            get
-            {
-                return textOptions;
-            }
-            set
-            {
-                if (textOptions != value)
-                {
-                    textOptions = value;
-                    RaisePropertyChanged("TextOptions");
-                }
-            }
-        }
+        public TextEditorOptions TextOptions { get; set; }
+
         #endregion TextEditorOptions
-
-        #region ContentId
-
-        private string _contentId = null;
-        /// <summary>
-        /// TextEditorContentId
-        /// </summary>
-        public string ContentId
-        {
-            get { return _contentId; }
-            set
-            {
-                if (_contentId != value)
-                {
-                    _contentId = value;
-                    RaisePropertyChanged("ContentId");
-                }
-            }
-        }
-
-        #endregion
     }
 }

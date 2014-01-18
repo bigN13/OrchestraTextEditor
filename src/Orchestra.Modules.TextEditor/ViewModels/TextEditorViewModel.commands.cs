@@ -32,14 +32,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         public Command ShowLineNumbersCommand { get; private set; }
 
-        /// <summary>
-        /// Method to check whether the ShowLineNumbers command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnShowLineNumbersCommandCanExecute()
-        {
-            return true;
-        }
+      
 
         /// <summary>
         /// Method to invoke when the ShowLineNumbers command is executed.
@@ -58,14 +51,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         public Command WordWrapCommand { get; private set; }
 
-        /// <summary>
-        /// Method to check whether the WordWrap command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnWordWrapCommandCanExecute()
-        {
-            return true;
-        }
+   
 
         /// <summary>
         /// Method to invoke when the WordWrap command is executed.
@@ -84,14 +70,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         public Command EndLineCommand { get; private set; }
 
-        /// <summary>
-        /// Method to check whether the EndLineCommand command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnEndLineCommandCanExecute()
-        {
-            return true;
-        }
+  
 
         /// <summary>
         /// Method to invoke when the EndLineCommand command is executed.
@@ -110,14 +89,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         public Command ShowSpacesCommand { get; private set; }
 
-        /// <summary>
-        /// Method to check whether the EndLineCommand command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnShowSpacesCommandCanExecute()
-        {
-            return true;
-        }
+   
 
         /// <summary>
         /// Method to invoke when the EndLineCommand command is executed.
@@ -130,54 +102,21 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         }
         #endregion
 
-        #region ShowTab Command
-        /// <summary>
-        /// Gets the EndLine command.
-        /// </summary>
-        public Command ShowTabCommand { get; private set; }
-
-        /// <summary>
-        /// Method to check whether the EndLineCommand command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnShowTabCommandCanExecute()
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Method to invoke when the EndLineCommand command is executed.
-        /// </summary>
-        private void OnShowTabCommandExecute()
-        {
-            // Check if ShowSpaces is false else true
-            TextOptions.ShowTabs = !TextOptions.ShowTabs;
-            Log.Info("Show Tabs");
-
-        }
-        #endregion
-
+     
         #region Close Document Command
         /// <summary>
         /// Gets the Close command.
         /// </summary>
         public Command CloseDocument { get; private set; }
+        
 
-        /// <summary>
-        /// Method to check whether the Browse command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnCloseCommandCanExecute()
-        {
-            return true;
-        }
 
         /// <summary>
         /// Method to invoke when the Browse command is executed.
         /// </summary>
         private void OnCloseDocumentExecute()
         {
-            if (IsDirty)
+            if (IsDirtyDoc)
             {
                 if (_messageService.Show(string.Format("Save changes for file '{0}'?", this.FileName), "Are you sure?", MessageButton.YesNo) == MessageResult.Yes)
                 {
@@ -193,7 +132,6 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             _textEditorModule.Close(this);
             _orchestraService.CloseDocument(this);
             Log.Info(string.Format("Current file {0} is closed!", FileName));
-
         }
 
         #endregion
@@ -210,22 +148,18 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
         private bool OnSaveCommandCanExecute()
         {
-            return IsDirty;
+            return IsDirtyDoc;
         }
 
         /// <summary>
-        /// Method to invoke when the Browse command is executed.
+        /// Method to invoke when the Save command is executed.
         /// </summary>
         private void OnSaveCommandExecute()
         {
             _textEditorModule.Save(this, false);
 
-            IsDirty = false;
-            //Title = FileName;
+            IsDirtyDoc = false;
         }
-
-    
-
         #endregion
 
         #region SaveAs Document Command
@@ -251,10 +185,9 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             //bool saveAsFlag = true;
             _textEditorModule.Save(this, true);
 
-            IsDirty = false;
+            IsDirtyDoc = false;
             //Title = FileName;
         }
-
         #endregion
 
         #region Update Document Command
@@ -296,7 +229,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
         private bool OnScriptCSCommandCanExecute()
         {
-            bool result = (Path.GetExtension(_filePath) == ".csx") ? true : false;
+            bool result = (Path.GetExtension(FilePath) == ".csx") ? true : false;
 
             return result;
         }
@@ -312,39 +245,33 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             //  /C      Carries out the command specified by string and then terminates
             //  /K      Carries out the command specified by string but remains
 
-            System.Diagnostics.Process process = new System.Diagnostics.Process();
-            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-            startInfo.WorkingDirectory = Path.GetDirectoryName(_filePath);
-            //startInfo.WorkingDirectory = @"K:\SCRIPTCS\webapi";
-            //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            startInfo.FileName = "cmd.exe";
+            try
+            {
+                // Using CatelService to open service
+                //_processService.StartProcess("cmd.exe", @"/K scriptcs " + Path.GetDirectoryName(_filePath)+@"\" + Title.TrimEnd('*'));
 
-            startInfo.Arguments = "/K scriptcs " + Title.TrimEnd('*');
+                System.Diagnostics.Process process = new System.Diagnostics.Process();
+                System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+                startInfo.WorkingDirectory = Path.GetDirectoryName(FilePath);
+                //startInfo.WorkingDirectory = @"K:\SCRIPTCS\webapi";
+                //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                startInfo.FileName = "cmd.exe";
 
-            process.StartInfo = startInfo;
+                startInfo.Arguments = "/K scriptcs " + Title.TrimEnd('*');
 
-            process.Start();
+                process.StartInfo = startInfo;
 
-            process.WaitForExit();
+                process.Start();
 
-            //var startInfo = new ProcessStartInfo
-            //{
-            //    FileName = "server.csx",
-            //    WorkingDirectory = @"K:\SCRIPTCS\webapi",
-            //    //Arguments = "scriptcs"
-            //    //Arguments = "/c scriptcs server.csx"
-            //    //RedirectStandardInput = true,
-            //    //RedirectStandardOutput = true,
-            //    //UseShellExecute = false,
-            //    //CreateNoWindow = true
-            //};
+                process.WaitForExit();
+            }
+            catch (Exception ex)
+            {
+                _messageService.ShowError("Can't open command line!\n\n"
+                    + ex.Message + "\n", "Error");
 
-            //var process = new Process { StartInfo = startInfo };
-
-            ////process.Start();
-            ////process.StandardInput.WriteLine("scriptcs server.csx");
-            ////process.StandardInput.WriteLine(@"dir>c:\results2.txt");
-            ////process.StandardInput.WriteLine("exit");
+                Log.Error(ex, "Failed to open command line! ");
+            }
         }
 
         #endregion
@@ -355,21 +282,13 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         public Command DocumentMapOpenCommand { get; private set; }
 
-        /// <summary>
-        /// Method to check whether the Browse command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnDocumentMapOpenCanExecute()
-        {
-            return true;
-        }
-
+ 
         /// <summary>
         /// Method to invoke when the Browse command is executed.
         /// </summary>
         private void OnDocumentMapOpenExecute()
         {
-            var viewModel = new DocumentMapViewModel(regextPattern);
+            var viewModel = new DocumentMapViewModel(_regextPattern);
 
             var uiVisualizerService = Catel.IoC.ServiceLocator.Default.ResolveType<IUIVisualizerService>();
             uiVisualizerService.ShowDialog(viewModel);
@@ -380,8 +299,6 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             //_textEditorModule.Save(this, true);
             UpdateContextSensitiveData();
         }
-
         #endregion
-
     }
 }

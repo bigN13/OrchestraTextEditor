@@ -100,7 +100,8 @@ namespace Orchestra.Modules.TextEditor
             //Argument.IsNotNull(() => saveFileService);
 
             _uiVisualizerService = uiVisualizerService;
-            
+
+         
         }
 
         /// <summary>
@@ -238,13 +239,14 @@ namespace Orchestra.Modules.TextEditor
 
             #region TextEditor Module
 
-            ribbonService.RegisterContextualRibbonItem<TextEditorView>(new RibbonComboBox(Name, "Languages")
-            {
-                ItemsSource = "SyntaxHighlighting",
-                SelectedItem = "SelectedLanguage",
-                Layout = new RibbonItemLayout { Width = 100 },
-                Style = Application.Current.Resources["SelectedSitesComboBoxStyle"] as Style
-            }, ModuleName);
+            // Language selection combobox 
+            //ribbonService.RegisterContextualRibbonItem<TextEditorView>(new RibbonComboBox(Name, "Languages")
+            //{
+            //    ItemsSource = "SyntaxHighlighting",
+            //    SelectedItem = "SelectedLanguage",
+            //    Layout = new RibbonItemLayout { Width = 100 },
+            //    Style = Application.Current.Resources["SelectedSitesComboBoxStyle"] as Style
+            //}, ModuleName);
 
             // Find the template to show as dynamic content. TODO: Refactor, make more elegant.
             var template = Application.Current.Resources["TestTemplate"] as DataTemplate;
@@ -345,7 +347,7 @@ namespace Orchestra.Modules.TextEditor
             if (orcaViewModel != null)
             {
                 var messageService = GetService<IMessageService>();
-                messageService.ShowError(string.Format("The file '{0}' is already Opened", orcaViewModel.FileName));
+                messageService.ShowError(string.Format("The file '{0}' is already Opened ", orcaViewModel.FileName));
 
                 Log.Warning("File is already opened " + orcaViewModel.FileName);
 
@@ -411,7 +413,6 @@ namespace Orchestra.Modules.TextEditor
 
         #endregion
 
-
         #region Internal Close
         internal void Close(TextEditorViewModel fileToClose)
         {
@@ -421,7 +422,6 @@ namespace Orchestra.Modules.TextEditor
 
         }
         #endregion
-
 
         #region Internal Save
         internal void Save(TextEditorViewModel fileToSave, bool saveAsFlag = false)
@@ -444,9 +444,9 @@ namespace Orchestra.Modules.TextEditor
 
            
             File.WriteAllText(fileToSave.FilePath, fileToSave.Document.Text);
+            //fileToSave.IsDirty = false;
 
             Log.Info("File saved : " + fileToSave.FilePath);
-            //fileToSave.IsDirty = false;
         }
         #endregion
 
@@ -477,6 +477,10 @@ namespace Orchestra.Modules.TextEditor
         private void LoadResourceDictionary()
         {
             Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/Orchestra.Modules.TextEditor;component/ResourceDictionary.xaml", UriKind.RelativeOrAbsolute) });
+            Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("pack://application:,,,/Fluent;Component/Themes/Generic.xaml", UriKind.RelativeOrAbsolute)
+            });
         }
         #endregion
     }

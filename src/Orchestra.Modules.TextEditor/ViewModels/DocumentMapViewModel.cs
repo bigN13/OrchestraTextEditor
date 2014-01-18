@@ -21,6 +21,8 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         #region Variables
         //private readonly string _path;
 
+        private readonly IMessageMediator _messageMediator;
+
         /// <summary>
         /// The log
         /// </summary>
@@ -47,10 +49,12 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             RegexContent = Regex;
 
-            SaveRegex = new Command(OnSaveRegexExecute, OnSaveRegexCanExecute);
+            SaveRegex = new Command(OnSaveRegexExecute);
+
+            _messageMediator = Catel.IoC.ServiceLocator.Default.ResolveType<IMessageMediator>();
+
         }
         #endregion
-
 
         /// <summary>
         /// Gets the SaveRegex command.
@@ -58,22 +62,12 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         public Command SaveRegex { get; private set; }
 
         /// <summary>
-        /// Method to check whether the SaveRegex command can be executed.
-        /// </summary>
-        /// <returns><c>true</c> if the command can be executed; otherwise <c>false</c></returns>
-        private bool OnSaveRegexCanExecute()
-        {
-            return true;
-        }
-
-        /// <summary>
         /// Method to invoke when the SaveRegex command is executed.
         /// </summary>
         private void OnSaveRegexExecute()
         {
             // Passing the currentFileName to differentiate the mediator message
-            var messageMediator = Catel.IoC.ServiceLocator.Default.ResolveType<IMessageMediator>();
-            messageMediator.SendMessage(RegexContent);
+            _messageMediator.SendMessage(RegexContent);
 
             // Close current window 
             CloseViewModel(true);

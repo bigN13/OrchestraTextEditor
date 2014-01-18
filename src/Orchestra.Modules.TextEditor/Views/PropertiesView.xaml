@@ -20,7 +20,7 @@
         <ListView x:Name="PresetList"  
             	ItemsSource="{Binding MethodSignatureCollection}" 
             	SelectedItem="{Binding SelectectedDocumentItem}"
-            	DisplayMemberPath="currentMatch"
+            	DisplayMemberPath="CurrentMatch"
             	VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0" Grid.Row="3">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="SelectionChanged">

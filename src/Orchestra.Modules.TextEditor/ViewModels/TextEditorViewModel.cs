@@ -38,12 +38,11 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         private readonly IOrchestraService _orchestraService;
         private readonly IMessageMediator _messageMediator;
         private readonly IContextualViewModelManager _contextualViewModelManager;
+        private readonly IProcessService _processService;
 
         private readonly string _path;
-        private string regextPattern;
-
+        private string _regextPattern;
         private PropertiesViewModel _propertiesViewModel;
-
         private TextEditorModule _textEditorModule;
 
         /// <summary>
@@ -63,8 +62,9 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <param name="messageMediator">The message mediator.</param>
         /// <param name="contextualViewModelManager">The contextual view model manager.</param>
         /// <param name="textEditorModule">The Main Module Class.</param>
-        public TextEditorViewModel(string title, TextEditorModule textEditorModule, IMessageService messageService, IOrchestraService orchestraService, IMessageMediator messageMediator, IContextualViewModelManager contextualViewModelManager)
-            : this(textEditorModule, messageService, orchestraService, messageMediator, contextualViewModelManager)
+        /// <param name="processService">The process service.</param>
+        public TextEditorViewModel(string title, TextEditorModule textEditorModule, IMessageService messageService, IOrchestraService orchestraService, IMessageMediator messageMediator, IContextualViewModelManager contextualViewModelManager, IProcessService processService)
+            : this(textEditorModule, messageService, orchestraService, messageMediator, contextualViewModelManager, processService)
         {
             if (!string.IsNullOrWhiteSpace(title))
             {
@@ -87,50 +87,53 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// <param name="messageMediator">The message mediator.</param>
         /// <param name="contextualViewModelManager">The contextual view model manager.</param>
         /// <param name="textEditorModule">The Main Module Class.</param>
-        public TextEditorViewModel(TextEditorModule textEditorModule, IMessageService messageService, IOrchestraService orchestraService, IMessageMediator messageMediator, IContextualViewModelManager contextualViewModelManager)
+        /// <param name="processService">The process service.</param>
+        public TextEditorViewModel(TextEditorModule textEditorModule, IMessageService messageService, IOrchestraService orchestraService, 
+            IMessageMediator messageMediator, IContextualViewModelManager contextualViewModelManager, IProcessService processService)
         {
             Argument.IsNotNull(() => orchestraService);
             Argument.IsNotNull(() => orchestraService);
             Argument.IsNotNull(() => messageMediator);
+            Argument.IsNotNull(() => processService);
+
+            Document = new TextDocument();
 
             _messageService = messageService;
             _orchestraService = orchestraService;
             _messageMediator = messageMediator;
             _contextualViewModelManager = contextualViewModelManager;
             _textEditorModule = textEditorModule;
+            _processService = processService;
 
             #region TextEditor related
             TextOptions = new TextEditorOptions() { ShowSpaces = true };
 
-
             // Set Highlightning to C#
             HighlightDef = HighlightingManager.Instance.GetDefinition("C#");
-            SelectedLanguage = "C#";
-            //this._isDirty = false;
+            //SelectedLanguage = "C#";
+            IsDirtyDoc = false;
             IsReadOnly = false;
             ShowLineNumbers = true;
             WordWrap = false;
 
             // Comands
-            ShowLineNumbersCommand = new Command(OnShowLineNumbersCommandExecute, OnShowLineNumbersCommandCanExecute);
-            WordWrapCommand = new Command(OnWordWrapCommandExecute, OnWordWrapCommandCanExecute);
-            EndLineCommand = new Command(OnEndLineCommandExecute, OnEndLineCommandCanExecute);
-            ShowSpacesCommand = new Command(OnShowSpacesCommandExecute, OnShowSpacesCommandCanExecute);
-            ShowTabCommand = new Command(OnShowTabCommandExecute, OnShowTabCommandCanExecute);
+            ShowLineNumbersCommand = new Command(OnShowLineNumbersCommandExecute);
+            WordWrapCommand = new Command(OnWordWrapCommandExecute);
+            EndLineCommand = new Command(OnEndLineCommandExecute);
+            ShowSpacesCommand = new Command(OnShowSpacesCommandExecute);
 
             SaveAsCommand = new Command(OnSaveAsCommandExecute, OnSaveAsCommandCanExecute);
             SaveCommand = new Command(OnSaveCommandExecute, OnSaveCommandCanExecute);
-            CloseDocument = new Command(OnCloseDocumentExecute, OnCloseCommandCanExecute);
+            CloseDocument = new Command(OnCloseDocumentExecute);
             UpdateCommand = new Command(OnUpdateCommandExecute, OnUpdateCommandCanExecute);
 
-            DocumentMapOpenCommand = new Command(OnDocumentMapOpenExecute, OnDocumentMapOpenCanExecute);
+            DocumentMapOpenCommand = new Command(OnDocumentMapOpenExecute);
 
             ScriptCSCommand = new Command(OnScriptCSCommandExecute, OnScriptCSCommandCanExecute);
             #endregion
 
             #region Document related
 
-            //CloseDocument = new Command(OnCloseDocumentExecute);
             Title = FileName;
             #endregion
 
@@ -140,12 +143,12 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             _path = Path.Combine(directory, "mapsettings.txt");
             if (File.Exists(_path))
             {
-                regextPattern = File.ReadAllText(_path);
+                _regextPattern = File.ReadAllText(_path);
             }
             else
             {
                 // Set the default value
-                regextPattern = "^.*\b(private|public|sealed|protected|virtual|internal)\b.*$";
+                _regextPattern = "^.*\b(private|public|sealed|protected|virtual|internal)\b.*$";
             }
 
             messageMediator.Register<string>(this, OnDocMapRegexChange);              
@@ -155,14 +158,14 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         }
 
 
-        private void OnDocMapRegexChange(string RegexContent)
+        private void OnDocMapRegexChange(string regexContent)
         {
-            if (!string.IsNullOrEmpty(RegexContent))
+            if (!string.IsNullOrEmpty(regexContent))
             {
-                regextPattern = RegexContent;
+                _regextPattern = regexContent;
 
                 // Save the new Regex to Disk
-                File.WriteAllText(_path, regextPattern);
+                File.WriteAllText(_path, _regextPattern);
 
                 Log.Info("File saved : " + _path);
 
@@ -174,52 +177,52 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
         #region Changing language
 
-        /// <summary>
-        /// Gets the recent sites.
-        /// </summary>
-        /// <value>
-        /// The recent sites.
-        /// </value>
-        public string[] SyntaxHighlighting { get { return new[] { "XML", "C#", "C++", "PHP", "Java" }; } }
+        ///// <summary>
+        ///// Gets the recent sites.
+        ///// </summary>
+        ///// <value>
+        ///// The recent sites.
+        ///// </value>
+        //public string[] SyntaxHighlighting { get { return new[] { "XML", "C#", "C++", "PHP", "Java" }; } }
 
-        /// <summary>
-        /// Gets or sets the SelectedSite value.
-        /// </summary>
-        public string SelectedLanguage
-        {
-            get { return GetValue<string>(SelectedLanugageProperty); }
-            set { SetValue(SelectedLanugageProperty, value); }
-        }
+        ///// <summary>
+        ///// Gets or sets the SelectedSite value.
+        ///// </summary>
+        //public string SelectedLanguage
+        //{
+        //    get { return GetValue<string>(SelectedLanugageProperty); }
+        //    set { SetValue(SelectedLanugageProperty, value); }
+        //}
 
-        /// <summary>
-        /// SelectedSite property data.
-        /// </summary>
-        public static readonly PropertyData SelectedLanugageProperty = RegisterProperty("SelectedLanguage", typeof(string), null,
-            (sender, e) => ((TextEditorViewModel)sender).OnSelectedLanguageChanged());
+        ///// <summary>
+        ///// SelectedSite property data.
+        ///// </summary>
+        //public static readonly PropertyData SelectedLanugageProperty = RegisterProperty("SelectedLanguage", typeof(string), null,
+        //    (sender, e) => ((TextEditorViewModel)sender).OnSelectedLanguageChanged());
 
-        /// <summary>
-        /// Called when the SelectedSite value changed.
-        /// </summary>
-        private void OnSelectedLanguageChanged()
-        {
-            switch (SelectedLanguage)
-            {
-                // TODO: Implement logic for changing Programming language
+        ///// <summary>
+        ///// Called when the SelectedSite value changed.
+        ///// </summary>
+        //private void OnSelectedLanguageChanged()
+        //{
+        //    switch (SelectedLanguage)
+        //    {
+        //        // TODO: Implement logic for changing Programming language
 
-                //case "XML":
-                //    Url = "http://www.github.com/Orcomp/Orchestra";
-                //    break;
+        //        //case "XML":
+        //        //    Url = "http://www.github.com/Orcomp/Orchestra";
+        //        //    break;
 
-                //case "C#":
-                //    Url = "http://www.catelproject.com";
-                //    break;
+        //        //case "C#":
+        //        //    Url = "http://www.catelproject.com";
+        //        //    break;
 
-                default:
-                    return;
-            }
+        //        default:
+        //            return;
+        //    }
 
-            //_this.OnBrowseExecute();
-        }
+        //    //_this.OnBrowseExecute();
+        //}
 
         #endregion
 
@@ -242,7 +245,7 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         {
             if (_messageService.Show("Are you sure you want to close this window?", "Are you sure?", MessageButton.YesNo) == MessageResult.Yes)
             {
-                if (IsDirty)
+                if (IsDirtyDoc)
                 {
                     if (_messageService.Show(string.Format("Save changes for file '{0}'?", this.FileName), "Are you sure?", MessageButton.YesNo) == MessageResult.Yes)
                     {
@@ -302,10 +305,10 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
             Regex r = null;
             Match m;
-            RegexOptions TheOptions = RegexOptions.None;
-            TheOptions |= RegexOptions.IgnoreCase;
-            TheOptions |= RegexOptions.Multiline;
-            TheOptions |= RegexOptions.IgnorePatternWhitespace;
+            RegexOptions theOptions = RegexOptions.None;
+            theOptions |= RegexOptions.IgnoreCase;
+            theOptions |= RegexOptions.Multiline;
+            theOptions |= RegexOptions.IgnorePatternWhitespace;
 
             #region Testing regex
             //string regextPattern = @"@Q(?:[^Q]+|QQ)*Q|Q(?:[^Q\\]+|\\.)*Q".Replace('Q', '\"');
@@ -333,29 +336,31 @@ namespace Orchestra.Modules.TextEditor.ViewModels
 
             try
             {
-                r = new Regex(regextPattern, TheOptions);
+                r = new Regex(_regextPattern, theOptions);
             }
             catch (Exception ex)
             {
-                _messageService.ShowError("There was an error in the regular expression!\n\n"
+                Log.Error(ex, "Failed to execute regular expression! ");
+
+                _messageService.ShowError("Failed to execute regular expression!\n\n"
                     + ex.Message + "\n", "Error");
             }
 
-            for (int i = 1; i < _document.LineCount; i++)
+            for (int i = 1; i < Document.LineCount; i++)
             {
                 // Get the current line number
-                DocumentLine line = _document.GetLineByNumber(i);
+                DocumentLine line = Document.GetLineByNumber(i);
 
                 // Try to Match the contect fo line with specified pattern
-                m = r.Match(_document.GetText(line));
+                m = r.Match(Document.GetText(line));
 
                 // If line is has match create new MatchItem and add it 
                 // to collection
                 if (m.Success)
                 {
                     MatchItem mi = new MatchItem();
-                    mi.currentLine = i;
-                    mi.currentMatch = m;
+                    mi.CurrentLine = i;
+                    mi.CurrentMatch = m;
                     methodsCollection.Add(mi);
                 }
             }

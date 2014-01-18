@@ -85,7 +85,6 @@ namespace Orchestra.Modules.TextEditor.ViewModels
         /// </summary>
         public MatchItem SelectectedDocumentItem { get; set; }
 
-     
         #endregion
 
         #region DocumentMap Command
@@ -117,6 +116,5 @@ namespace Orchestra.Modules.TextEditor.ViewModels
             }           
         }
         #endregion
-
     }
 }

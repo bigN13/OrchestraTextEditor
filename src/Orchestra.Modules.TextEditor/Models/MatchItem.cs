@@ -14,12 +14,12 @@ namespace Orchestra.Modules.TextEditor.Models
         /// <summary>
         /// The line of detected match
         /// </summary>
-        public int currentLine { get; set; }
+        public int CurrentLine { get; set; }
 
         /// <summary>
         /// The actual detected match
         /// </summary>
-        public Match currentMatch { get; set; }
+        public Match CurrentMatch { get; set; }
     }
 
 }
